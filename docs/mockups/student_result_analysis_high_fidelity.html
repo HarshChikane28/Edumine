@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduSync ERP - Result Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed-variant": "#4f378a",
+                      "background": "#fdf7ff",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#e9ddff",
+                      "surface-bright": "#fdf7ff",
+                      "tertiary": "#765b00",
+                      "primary-fixed-dim": "#cfbcff",
+                      "on-surface-variant": "#494551",
+                      "tertiary-fixed": "#ffdf93",
+                      "surface-dim": "#ded8e0",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-container": "#f2ecf4",
+                      "secondary-fixed": "#e9ddff",
+                      "on-secondary-container": "#645a7d",
+                      "outline": "#7a7582",
+                      "inverse-surface": "#322f35",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e6e0e9",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#e7c365",
+                      "on-secondary-fixed": "#1f1635",
+                      "on-tertiary-fixed": "#241a00",
+                      "on-primary-container": "#e0d2ff",
+                      "secondary-container": "#e1d4fd",
+                      "on-background": "#1d1b20",
+                      "inverse-primary": "#cfbcff",
+                      "primary": "#4f378a",
+                      "surface-tint": "#6750a4",
+                      "on-tertiary-container": "#503d00",
+                      "inverse-on-surface": "#f5eff7",
+                      "secondary": "#63597c",
+                      "surface": "#fdf7ff",
+                      "on-primary-fixed": "#22005d",
+                      "on-surface": "#1d1b20",
+                      "primary-container": "#6750a4",
+                      "secondary-fixed-dim": "#cdc0e9",
+                      "outline-variant": "#cbc4d2",
+                      "surface-container-high": "#ece6ee",
+                      "on-secondary-fixed-variant": "#4b4263",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "surface-container-highest": "#e6e0e9",
+                      "tertiary-container": "#c9a74d",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f8f2fa"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "40px",
+                      "gutter": "24px",
+                      "xl": "64px",
+                      "xs": "4px",
+                      "margin-desktop": "32px",
+                      "margin-mobile": "16px",
+                      "md": "24px",
+                      "sm": "12px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-xl": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col antialiased">
+<div class="fixed inset-0 z-[-1] bg-gradient-to-br from-surface-container-low via-surface-bright to-secondary-container/20 opacity-70"></div>
+<!-- Navigation suppressed as this is a task-focused screen (Result Analysis) -->
+<main class="flex-1 max-w-7xl mx-auto w-full px-margin-mobile md:px-margin-desktop py-md flex flex-col gap-gutter">
+<!-- Header Actions -->
+<header class="flex items-center justify-between mb-sm">
+<button class="flex items-center gap-2 text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-xl">arrow_back</span>
+<span class="font-headline-md text-headline-md">Result Analysis</span>
+</button>
+<div class="flex items-center gap-4">
+<button class="text-outline hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined text-xl">share</span>
+</button>
+<button class="text-outline hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined text-xl">download</span>
+</button>
+</div>
+</header>
+<!-- Top Overview Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-gutter flex flex-col md:flex-row justify-between items-center gap-lg">
+<div class="flex-1 space-y-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-1">Final Semester Exam</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Class Rank: 3</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-tertiary-container/10 text-tertiary-container font-label-md text-label-md rounded-full border border-tertiary-container/20">
+<span class="material-symbols-outlined" style="font-size: 14px;">star</span>
+                        GPA 3.9
+                    </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 font-label-md text-label-md rounded-full border border-emerald-200">
+<span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                        PASS
+                    </span>
+</div>
+</div>
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle class="text-surface-variant" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="282.7" stroke-dashoffset="36.75" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-lg text-headline-lg text-primary font-bold">87%</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Score</span>
+</div>
+</div>
+</div>
+<!-- Merit Badges (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="bg-gradient-to-br from-[#4facfe] to-[#00f2fe] p-4 rounded-xl shadow-sm flex items-start gap-3 text-white">
+<span class="material-symbols-outlined text-2xl mt-1">auto_awesome</span>
+<p class="font-body-sm text-body-sm leading-relaxed">
+                    🌟 You are a superstar in Mathematics, Physics, English, Computer Sci!
+                </p>
+</div>
+<div class="bg-gradient-to-br from-[#667eea] to-[#764ba2] p-4 rounded-xl shadow-sm flex items-start gap-3 text-white">
+<span class="material-symbols-outlined text-2xl mt-1">emoji_events</span>
+<p class="font-body-sm text-body-sm leading-relaxed">
+                    🏆 You are in the top 5! Keep up the momentum.
+                </p>
+</div>
+<div class="bg-gradient-to-br from-[#38f9d7] to-[#43e97b] p-4 rounded-xl shadow-sm flex items-start gap-3 text-[#0f3a22]">
+<span class="material-symbols-outlined text-2xl mt-1">trending_up</span>
+<p class="font-body-sm text-body-sm leading-relaxed font-medium">
+                    📈 Your performance improved by 5% compared to the last unit test.
+                </p>
+</div>
+</div>
+<!-- Marksheet Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant/30">
+<h2 class="font-headline-md text-headline-md text-on-surface">Marksheet</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/30">
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Subject</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Marks</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Grade</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant font-semibold">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-4 font-body-sm text-body-sm text-on-surface">Mathematics</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface">92</td>
+<td class="p-4 font-body-sm text-body-sm text-emerald-600 font-medium">A+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-800 font-label-md text-[10px] rounded block text-center max-w-[100px]">Pass</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-4 font-body-sm text-body-sm text-on-surface">Physics</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface">85</td>
+<td class="p-4 font-body-sm text-body-sm text-emerald-600 font-medium">A</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-800 font-label-md text-[10px] rounded block text-center max-w-[100px]">Pass</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-4 font-body-sm text-body-sm text-on-surface">Chemistry</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface">78</td>
+<td class="p-4 font-body-sm text-body-sm text-amber-600 font-medium">B+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-800 font-label-md text-[10px] rounded block text-center max-w-[100px]">Pass</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-4 font-body-sm text-body-sm text-on-surface">English</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface">88</td>
+<td class="p-4 font-body-sm text-body-sm text-emerald-600 font-medium">A</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-800 font-label-md text-[10px] rounded block text-center max-w-[100px]">Pass</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-4 font-body-sm text-body-sm text-on-surface">Computer Sci</td>
+<td class="p-4 font-body-sm text-body-sm text-on-surface">95</td>
+<td class="p-4 font-body-sm text-body-sm text-emerald-600 font-medium">A+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-800 font-label-md text-[10px] rounded block text-center max-w-[100px]">Pass</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Bottom Chart Placeholder -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-md min-h-[300px] flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Subject Performance vs Average</h2>
+<!-- Decorative Chart Placeholder representing https://lh3.googleusercontent.com/aida-public/AB6AXuC1N7OAiPVy2bVlrfPSxSFV-XQyO1V9r2SQaonO0y4zMj6d_T5f0qYdrjVRqgTloLtOs1dvS0vdPr0PtMLKIfr2sWNQrSHWL6Kb8DjExk01rEuUJPkoyt_xG_mlinuz424G8CqrFQhg6copGTwKbV6Cs8-zt0Nmx-jjm5ka9IccYtC7rVwoR0b7E5bcAsf7EWIemtlxTp1_ADdo1rUIsY0DmSxsgVV1ivkKYrId1CBmPTbtuxBJxtBNsKae1wbg2q52k0c style -->
+<div class="flex-1 relative flex items-end justify-around gap-4 pt-10 border-b border-l border-outline-variant/30 pb-2 pl-2">
+<!-- Y Axis Labels -->
+<div class="absolute left-[-24px] top-0 bottom-0 flex flex-col justify-between text-[10px] text-outline">
+<span>100</span>
+<span>75</span>
+<span>50</span>
+<span>25</span>
+<span>0</span>
+</div>
+<!-- Bars -->
+<div class="w-12 h-[92%] bg-primary/80 rounded-t-sm relative group cursor-pointer hover:bg-primary transition-colors">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Math: 92</div>
+<div class="absolute -bottom-6 w-full text-center text-xs text-on-surface-variant truncate">Math</div>
+</div>
+<div class="w-12 h-[85%] bg-primary/80 rounded-t-sm relative group cursor-pointer hover:bg-primary transition-colors">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Phy: 85</div>
+<div class="absolute -bottom-6 w-full text-center text-xs text-on-surface-variant truncate">Phy</div>
+</div>
+<div class="w-12 h-[78%] bg-secondary-container rounded-t-sm relative group cursor-pointer hover:bg-secondary transition-colors">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Chem: 78</div>
+<div class="absolute -bottom-6 w-full text-center text-xs text-on-surface-variant truncate">Chem</div>
+</div>
+<div class="w-12 h-[88%] bg-primary/80 rounded-t-sm relative group cursor-pointer hover:bg-primary transition-colors">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Eng: 88</div>
+<div class="absolute -bottom-6 w-full text-center text-xs text-on-surface-variant truncate">Eng</div>
+</div>
+<div class="w-12 h-[95%] bg-primary/80 rounded-t-sm relative group cursor-pointer hover:bg-primary transition-colors">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">CS: 95</div>
+<div class="absolute -bottom-6 w-full text-center text-xs text-on-surface-variant truncate">CS</div>
+</div>
+<!-- Average Line -->
+<div class="absolute top-[20%] left-0 right-0 border-t-2 border-dashed border-tertiary/50 pointer-events-none"></div>
+<span class="absolute top-[18%] right-2 text-[10px] text-tertiary font-medium">Class Avg</span>
+</div>
+<div class="h-6"></div> <!-- Space for x-axis labels -->
+</div>
+</main>
+</body></html>

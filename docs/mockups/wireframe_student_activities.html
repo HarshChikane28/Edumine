@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduSync ERP - Student Activities</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdf93",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#e9ddff",
+                        "secondary-container": "#e1d4fd",
+                        "surface-variant": "#e6e0e9",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1d1b20",
+                        "on-primary-fixed": "#22005d",
+                        "surface-container-low": "#f8f2fa",
+                        "on-secondary-container": "#645a7d",
+                        "secondary": "#63597c",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e6e0e9",
+                        "surface": "#fdf7ff",
+                        "primary-container": "#6750a4",
+                        "primary": "#4f378a",
+                        "inverse-primary": "#cfbcff",
+                        "surface-tint": "#6750a4",
+                        "tertiary": "#765b00",
+                        "surface-container": "#f2ecf4",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-secondary": "#ffffff",
+                        "background": "#fdf7ff",
+                        "tertiary-container": "#c9a74d",
+                        "primary-fixed": "#e9ddff",
+                        "on-background": "#1d1b20",
+                        "on-surface-variant": "#494551",
+                        "surface-container-high": "#ece6ee",
+                        "inverse-surface": "#322f35",
+                        "surface-bright": "#fdf7ff",
+                        "on-tertiary-container": "#503d00",
+                        "inverse-on-surface": "#f5eff7",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#1f1635",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "outline": "#7a7582",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-primary-container": "#e0d2ff",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#cfbcff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#ded8e0",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "outline-variant": "#cbc4d2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "40px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "md": "24px",
+                        "base": "8px",
+                        "xl": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-md px-sm gap-xs bg-surface-container-low border-r border-outline-variant h-screen w-64 fixed left-0 top-0 z-20 transition-transform duration-200 ease-in-out">
+<div class="px-sm mb-6">
+<h1 class="font-headline-md text-headline-md text-primary mb-1">EduSync ERP</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Management Modules</p>
+</div>
+<button class="flex items-center gap-2 w-full px-4 py-3 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:opacity-90 mb-4 transition-opacity">
+<span class="material-symbols-outlined text-lg">add</span>
+            Quick Upload
+        </button>
+<div class="flex-1 overflow-y-auto flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="font-label-md text-label-md">Academic</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Admin</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">quiz</span>
+<span class="font-label-md text-label-md">Exams</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-bold transition-all" href="#">
+<span class="material-symbols-outlined" data-weight="fill">celebration</span>
+<span class="font-label-md text-label-md">Student Activities</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Archives</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 w-full h-full">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-margin-desktop h-16 w-full bg-surface w-full top-0 sticky shadow-sm z-10 transition-colors">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="hidden md:flex items-center bg-surface-container px-4 py-2 rounded-full border border-outline-variant focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 p-0 font-body-sm text-body-sm text-on-surface w-64 placeholder-on-surface-variant" placeholder="Search activities..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-label-md text-on-surface">Alex Melan</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-[10px]">Product Manager</p>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant bg-surface-variant" data-alt="A small circular avatar placeholder image showing a professional headshot of a person in a corporate setting. The lighting is soft and neutral." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp_99QCAaYHXpW2V-Rg1UcIxW7WemJFmwvlDz2INSkvWdG8zU3Ghb4-IHnmQlPcM5_TBy77WexdNwwTbWLSVuB2ND2BlITAkDkAB3vvcLkvIUNRg3dI3IchpeuJqRm9vwME0iCwKw1-iNMudkGUyjCeKEgWbB1TE59L1Y1yEdY61XcmsLN88vRo4rR4EA1oTBgbLPUVTMNgbg0D5_dmo_B7GUkFaFeeloMj4w7tCi9k8u9-uzbVv482g"/>
+<button class="text-primary font-label-md text-label-md hover:underline">Switch Role</button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop bg-surface-container-low">
+<div class="max-w-[1400px] mx-auto">
+<div class="flex items-center gap-4 mb-8">
+<button class="p-2 rounded-full bg-surface border border-outline-variant hover:bg-surface-container-high transition-colors text-on-surface">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="font-headline-xl text-headline-xl text-on-surface">Student Activities Dashboard</h2>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Left/Main Column -->
+<div class="xl:col-span-8 flex flex-col gap-8">
+<!-- Upcoming Events & Clubs Section -->
+<section>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Upcoming Events &amp; Clubs</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant hover:border-primary transition-colors">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">gavel</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-semibold text-on-surface">Debate Club</h4>
+</div>
+<div class="space-y-2 font-body-sm text-body-sm text-on-surface-variant">
+<p><span class="font-semibold text-on-surface">Next:</span> Oct 27</p>
+<p><span class="font-semibold text-on-surface">Supervisor:</span> Mrs. Chen</p>
+<p><span class="font-semibold text-on-surface">Enrollment:</span> 45/50</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant hover:border-primary transition-colors">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">sports_soccer</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-semibold text-on-surface leading-tight">Soccer Match: Varsity vs. Oakwood</h4>
+</div>
+<div class="space-y-2 font-body-sm text-body-sm text-on-surface-variant">
+<p><span class="font-semibold text-on-surface">Date:</span> Oct 28, 4:00 PM</p>
+<p><span class="font-semibold text-on-surface">Coach:</span> Mr. Davis</p>
+<p><span class="font-semibold text-on-surface">Enrollment:</span> 22/25</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant hover:border-primary transition-colors">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined">palette</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-semibold text-on-surface">Art Exhibition Setup</h4>
+</div>
+<div class="space-y-2 font-body-sm text-body-sm text-on-surface-variant">
+<p><span class="font-semibold text-on-surface">Date:</span> Oct 29</p>
+<p><span class="font-semibold text-on-surface">Supervisor:</span> Ms. Lee</p>
+<p><span class="font-semibold text-on-surface">Enrollment:</span> 18/20</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant hover:border-primary transition-colors">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-semibold text-on-surface">Vremniers Club</h4>
+</div>
+<div class="space-y-2 font-body-sm text-body-sm text-on-surface-variant">
+<p><span class="font-semibold text-on-surface">Next:</span> Oct 27</p>
+<p><span class="font-semibold text-on-surface">Supervisor:</span> Ms. Lee</p>
+<p><span class="font-semibold text-on-surface">Enrollment:</span> 18/20</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Top Performing Clubs Section -->
+<section>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Top Performing Clubs</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Perf Card 1 -->
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant">
+<div class="flex items-center gap-3 mb-4 border-b border-outline-variant pb-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-sm">precision_manufacturing</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-semibold text-on-surface">Robotics Club</h4>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Performance:</span>
+<span class="font-semibold text-on-surface">98%</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm mt-2">
+<span class="text-on-surface-variant">Awards:</span>
+<span class="font-semibold text-on-surface">3</span>
+</div>
+</div>
+<!-- Perf Card 2 -->
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant">
+<div class="flex items-center gap-3 mb-4 border-b border-outline-variant pb-3">
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-sm">theater_comedy</span>
+</div>
+<h4 class="font-headline-sm text-[16px] font-semibold text-on-surface">Drama Club</h4>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Performance:</span>
+<span class="font-semibold text-on-surface">95%</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm mt-2">
+<span class="text-on-surface-variant">Awards:</span>
+<span class="font-semibold text-on-surface">2</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Recent Activity Feed -->
+<div class="xl:col-span-4">
+<div class="bg-surface rounded-xl p-md shadow-[0px_4px_12px_rgba(30,41,59,0.05)] border border-outline-variant h-full">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6">Recent Activity Feed</h3>
+<div class="relative border-l-2 border-surface-variant ml-4 space-y-8">
+<!-- Feed Item 1 -->
+<div class="relative pl-6">
+<div class="absolute w-4 h-4 rounded-full bg-primary-container border-2 border-surface -left-[9px] top-1"></div>
+<p class="font-body-md text-body-md text-on-surface">Science Club submitted project report</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Today, 10:30 AM</p>
+</div>
+<!-- Feed Item 2 -->
+<div class="relative pl-6">
+<div class="absolute w-4 h-4 rounded-full bg-outline-variant border-2 border-surface -left-[9px] top-1"></div>
+<p class="font-body-md text-body-md text-on-surface">New Chess Club members registered</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Yesterday, 3:15 PM</p>
+</div>
+<!-- Feed Item 3 -->
+<div class="relative pl-6">
+<div class="absolute w-4 h-4 rounded-full bg-outline-variant border-2 border-surface -left-[9px] top-1"></div>
+<p class="font-body-md text-body-md text-on-surface">Basketball practice scheduled</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Yesterday, 1:00 PM</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

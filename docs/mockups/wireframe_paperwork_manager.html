@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Administrative Paperwork Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#ffdf93",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#e9ddff",
+                    "secondary-container": "#e1d4fd",
+                    "surface-variant": "#e6e0e9",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1d1b20",
+                    "on-primary-fixed": "#22005d",
+                    "surface-container-low": "#f8f2fa",
+                    "on-secondary-container": "#645a7d",
+                    "secondary": "#63597c",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e6e0e9",
+                    "surface": "#fdf7ff",
+                    "primary-container": "#6750a4",
+                    "primary": "#4f378a",
+                    "inverse-primary": "#cfbcff",
+                    "surface-tint": "#6750a4",
+                    "tertiary": "#765b00",
+                    "surface-container": "#f2ecf4",
+                    "on-primary-fixed-variant": "#4f378a",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "on-secondary": "#ffffff",
+                    "background": "#fdf7ff",
+                    "tertiary-container": "#c9a74d",
+                    "primary-fixed": "#e9ddff",
+                    "on-background": "#1d1b20",
+                    "on-surface-variant": "#494551",
+                    "surface-container-high": "#ece6ee",
+                    "inverse-surface": "#322f35",
+                    "surface-bright": "#fdf7ff",
+                    "on-tertiary-container": "#503d00",
+                    "inverse-on-surface": "#f5eff7",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#1f1635",
+                    "tertiary-fixed-dim": "#e7c365",
+                    "outline": "#7a7582",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#cdc0e9",
+                    "on-tertiary-fixed": "#241a00",
+                    "on-primary-container": "#e0d2ff",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#cfbcff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-dim": "#ded8e0",
+                    "on-secondary-fixed-variant": "#4b4263",
+                    "outline-variant": "#cbc4d2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "40px",
+                    "margin-desktop": "32px",
+                    "margin-mobile": "16px",
+                    "xs": "4px",
+                    "sm": "12px",
+                    "gutter": "24px",
+                    "md": "24px",
+                    "base": "8px",
+                    "xl": "64px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-xl": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC; /* Consistent with style guidance */
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-full flex flex-col md:flex-row overflow-hidden">
+<!-- Mobile Top App Bar (Hidden on Desktop) -->
+<header class="md:hidden flex justify-between items-center px-margin-mobile h-16 w-full bg-surface border-b border-outline-variant shadow-sm z-50 relative">
+<div class="flex items-center gap-2">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">EduSync ERP</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<img alt="User Avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A small, circular avatar portrait of an educational administrator. The administrator is looking forward with a professional expression. The image is set against a clean, light mode background typical of a modern UI, ensuring high contrast and clarity. The style is photographic and modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACO_6LCgk6NpvK64R9UGmRExUCK5AhvIjQeFMqPskNH5sW5R8b7VJfA21_NDAnE_QDnIJLt7hzFnvPoFDUvutJ2ieFfyrryfl9yvwYrdOcfe_ocy7UxgLnc07BfG68WxOBVcwxiMbiQaQuJCa2zuR3aOmbZTCGbyQdgiwQ2H3A9_bLWlJ0abZHqOdobw0Aq9mHFMwCN0fZ8cCZbf0MUpWtuGwqGDm0uXf3JV1QZp14ZUmjY3vaO-Pivg"/>
+</div>
+</header>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant py-md px-sm gap-xs z-40 transition-transform duration-200 ease-in-out">
+<div class="mb-lg px-2">
+<div class="flex items-center gap-3 mb-1">
+<img alt="School Logo" class="w-8 h-8 rounded" data-alt="A stylized logo for an educational ERP system, featuring clean geometric shapes resembling a crest or a stylized book. The logo uses a modern color palette with deep navy and vibrant blue, consistent with the corporate educational theme. The design is minimalist and professional, suitable for a light mode interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH5CwmN6J1GZ2WYA9lPfZrS2n_16gYX-2PjicLucg0bWU5WgMbBKqK8NFMV9ReKty25UrQaEQmmqRkXViBABErZm11Vg-l2OIbyajYQgvIxSkXpWGBsHy-gkZXxeH3ZmayhRhZAh4qkTM9UEzJZCZHQtVjOsSb5a0HsOJGk4M11Omma-202BieWOr7ywT0TqY9THPD91kIJc4cnXR7Y4l2cUgktA5H1ciTQVQ2e29WdPv91_KD48D9rw"/>
+<span class="font-headline-md text-headline-md text-primary font-bold">EduSync</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider ml-11">Management Modules</p>
+</div>
+<button class="w-full bg-primary text-on-primary rounded-full py-2 px-4 flex items-center justify-center gap-2 font-label-md text-label-md font-bold mb-md hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-lg" data-icon="upload">upload</span>
+            Quick Upload
+        </button>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+                Academic
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-bold font-label-md text-label-md shadow-sm" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings" data-weight="fill">admin_panel_settings</span>
+                Admin
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+                Exams
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="info">info</span>
+                Info
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                Archives
+            </a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 flex flex-col h-full bg-[#F8FAFC] overflow-y-auto w-full">
+<!-- Desktop Top App Bar (Hidden on Mobile) -->
+<header class="hidden md:flex justify-between items-center px-margin-desktop h-16 w-full bg-surface border-b border-outline-variant sticky top-0 z-30">
+<div class="flex items-center gap-4 flex-1">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface truncate">Administrative Paperwork Manager</h1>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search Bar -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant pointer-events-none" data-icon="search">search</span>
+<input class="w-full bg-surface-container-high border border-outline-variant rounded-full py-2 pl-10 pr-4 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Search for anything..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<button class="flex items-center gap-2 text-primary hover:bg-surface-container-high px-3 py-1.5 rounded-lg transition-colors font-label-md text-label-md font-bold">
+                    Switch Role
+                    <span class="material-symbols-outlined text-sm" data-icon="swap_horiz">swap_horiz</span>
+</button>
+<img alt="User profile avatar" class="w-9 h-9 rounded-full object-cover border border-outline-variant cursor-pointer hover:ring-2 hover:ring-primary transition-all" data-alt="A small circular avatar of a female educational administrator in her 40s, looking professional and approachable. She is wearing business casual attire. The background is a soft, neutral studio backdrop. High-key lighting, consistent with a clean, light-mode user interface design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbsROKFolo3D7XmYB_lqemDZdcSWn3_2rASYWkaCRMxX301jQc44PZlhGM_Bdnuv1iV5QBspoAr9la_k0vbyQz9KsL_HxQ8EuuJfoiK-sTqPG2oANwbrVMWrxSfSNcHl6Obow3VpVHZGxwiz12Cjq-rCCqWq-k-2_SD5_LNi0fWK8Sb83HpqbU60bmysxfDn5c958I6VoUHxl-R0kdvtWCJOpnQoUSb3aolR3nCcJEMt2c3n7zL7DWXw"/>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-margin-mobile md:p-margin-desktop flex-1 max-w-7xl mx-auto w-full">
+<!-- Page Header Actions -->
+<div class="flex justify-between items-center mb-md">
+<button class="bg-[#e97b4d] text-white rounded-full py-2.5 px-6 flex items-center justify-center gap-2 font-label-md text-label-md font-bold hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-lg" data-icon="upload">upload</span>
+                    Upload New Document
+                </button>
+<!-- Optional: View Toggles or Filters could go here -->
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors bg-white">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Main Data Card -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-[0px_4px_12px_rgba(30,41,59,0.05)] overflow-hidden">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-[#FDFDFD]">
+<h2 class="font-headline-md text-headline-md text-on-surface">Digitized Documents Requests</h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest border-b border-outline-variant">
+<th class="py-3 px-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold w-1/4">Document Name</th>
+<th class="py-3 px-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold w-1/6">Subject</th>
+<th class="py-3 px-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold w-1/6">Date Requested</th>
+<th class="py-3 px-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold w-1/6">Requestor</th>
+<th class="py-3 px-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold w-1/12 text-center">Status</th>
+<th class="py-3 px-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold w-1/12 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant bg-white">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface font-medium">Student Enrollment Forms (Grade 9)</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Admissions</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Oct 26, 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Alex Melan</td>
+<td class="py-4 px-md text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-[11px] font-bold bg-[#d1fae5] text-[#065f46]">
+                                        Completed
+                                    </span>
+</td>
+<td class="py-4 px-md text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="View">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Download">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface font-medium">Teacher Leave Request - Sarah J.</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">HR / Staff</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Oct 25, 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Sarah Johnson</td>
+<td class="py-4 px-md text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-[11px] font-bold bg-[#dbeafe] text-[#1e40af]">
+                                        Processing
+                                    </span>
+</td>
+<td class="py-4 px-md text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="View">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Download">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface font-medium">Exam Schedule - Midterm 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Exams</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Exam Committee</td>
+<td class="py-4 px-md text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-[11px] font-bold bg-[#fef3c7] text-[#92400e]">
+                                        Pending
+                                    </span>
+</td>
+<td class="py-4 px-md text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="View">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Download">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface font-medium">Budget Proposal for Science Lab</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Finance</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Oct 23, 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Dr. A. Chemist</td>
+<td class="py-4 px-md text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-[11px] font-bold bg-[#fef3c7] text-[#92400e]">
+                                        Pending
+                                    </span>
+</td>
+<td class="py-4 px-md text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="View">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Download">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface font-medium">Incident Report #452</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Student Affairs</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Oct 20, 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Mr. B. Dean</td>
+<td class="py-4 px-md text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-[11px] font-bold bg-[#d1fae5] text-[#065f46]">
+                                        Completed
+                                    </span>
+</td>
+<td class="py-4 px-md text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="View">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Download">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface font-medium">New Curriculum Review - English</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Curriculum</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">Oct 18, 2023</td>
+<td class="py-4 px-md font-body-sm text-body-sm text-on-surface-variant">English Dept.</td>
+<td class="py-4 px-md text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-[11px] font-bold bg-[#dbeafe] text-[#1e40af]">
+                                        Processing
+                                    </span>
+</td>
+<td class="py-4 px-md text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="View">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Download">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-outline-variant bg-[#FDFDFD] flex items-center justify-center gap-2">
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md font-bold flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded-full text-on-surface-variant hover:bg-surface-container-high font-label-md text-label-md flex items-center justify-center transition-colors">2</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>
