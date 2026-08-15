@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Login, StudentDashboard, Assignments, Profile, Result } from '../pages/student';
 import { Exams, Documents, Activities, Timetable } from '../pages/admin';
+import { TimetableProvider } from '../stores/timetableStore';
 
 export type Role = 'student' | 'admin';
 export type Route = 'login' | 'dashboard' | 'assignments' | 'profile' | 'result' | 'exams' | 'documents' | 'activities' | 'timetable';
@@ -18,7 +19,7 @@ export function App() {
   if (route === 'login' || !role) return <Login onLogin={(nextRole) => { setStoredRole(nextRole); setRole(nextRole); navigate(nextRole === 'student' ? 'dashboard' : 'activities'); }} />;
   if (role === 'student' && ['exams', 'documents', 'activities', 'timetable'].includes(route)) { navigate('dashboard'); return <StudentDashboard />; }
   if (role === 'admin' && ['dashboard', 'assignments', 'profile', 'result'].includes(route)) { navigate('activities'); return <Activities />; }
-  switch (route) {
+  const page = (() => { switch (route) {
     case 'assignments': return <Assignments />;
     case 'profile': return <Profile />;
     case 'result': return <Result />;
@@ -27,5 +28,6 @@ export function App() {
     case 'activities': return <Activities />;
     case 'timetable': return <Timetable />;
     default: return <StudentDashboard />;
-  }
+  } })();
+  return <TimetableProvider>{page}</TimetableProvider>;
 }
