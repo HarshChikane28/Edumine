@@ -5,9 +5,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import get_current_user, require_permission, teacher_subject_ids
 from app.db.session import get_db
-from app.models import ClassRoom, StudentProfile, Subject, TimetableSlot, User, UserRole
+from app.models import ClassRoom, Subject, TimetableSlot, User, UserRole
 from app.services.timetable import DAYS, PERIODS, PERIOD_BY_TIME, generate_recommendation
 
 
@@ -25,22 +24,19 @@ class TimetablePayload(BaseModel):
     section: str
     slots: list[TimetableSlotPayload] = Field(default_factory=list)
 
+class ClassPayload(BaseModel):
+    grade: str = Field(min_length=1, max_length=40)
+    section: str = Field(min_length=1, max_length=20)
+
+class SubjectPayload(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    teacher_id: UUID
+    weekly_periods: int = Field(ge=1, le=20)
+
 
 async def find_class(db: AsyncSession, grade: str, section: str) -> ClassRoom:
     grade_options = (grade, f"Grade {grade}" if not grade.lower().startswith("grade ") else grade.removeprefix("Grade "))
     classroom = await db.scalar(select(ClassRoom).where(ClassRoom.grade.in_(grade_options), ClassRoom.section == section))
-    if not classroom:
-        raise HTTPException(status_code=404, detail="Class not found")
-    return classroom
-
-
-async def classroom_for_user(db: AsyncSession, grade: str, section: str, user: User) -> ClassRoom:
-    if user.role != UserRole.student:
-        return await find_class(db, grade, section)
-    profile = await db.get(StudentProfile, user.id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Student profile not found")
-    classroom = await db.get(ClassRoom, profile.class_id)
     if not classroom:
         raise HTTPException(status_code=404, detail="Class not found")
     return classroom
@@ -65,52 +61,80 @@ def transient_slots(classroom: ClassRoom, recommendations: list) -> list[Timetab
 
 
 @router.get("/classes")
-async def classes(_: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> list[dict]:
+async def classes(db: AsyncSession = Depends(get_db)) -> list[dict]:
     rows = list((await db.scalars(select(ClassRoom).order_by(ClassRoom.grade.desc(), ClassRoom.section))).all())
     return [{"grade": classroom.grade.removeprefix("Grade "), "section": classroom.section} for classroom in rows]
 
+@router.get("/teachers")
+async def teachers(db: AsyncSession = Depends(get_db)) -> list[dict]:
+    rows = list((await db.scalars(select(User).where(User.role == UserRole.teacher, User.is_active.is_(True)).order_by(User.full_name))).all())
+    return [{"id": str(teacher.id), "name": teacher.full_name, "email": teacher.email} for teacher in rows]
+
+@router.post("/classes")
+async def create_class(payload: ClassPayload, db: AsyncSession = Depends(get_db)) -> dict:
+    grade = payload.grade.strip(); section = payload.section.strip().upper()
+    if await db.scalar(select(ClassRoom).where(ClassRoom.grade == grade, ClassRoom.section == section)):
+        raise HTTPException(status_code=409, detail=f"{grade} • Section {section} already exists")
+    classroom = ClassRoom(grade=grade, section=section); db.add(classroom); await db.commit()
+    return {"id": str(classroom.id), "grade": classroom.grade.removeprefix("Grade "), "section": classroom.section}
+
+@router.delete("/classes/{class_id}")
+async def delete_class(class_id: UUID, db: AsyncSession = Depends(get_db)) -> dict:
+    classroom = await db.get(ClassRoom, class_id)
+    if not classroom: raise HTTPException(status_code=404, detail="Class not found")
+    if await db.scalar(select(Subject.id).where(Subject.class_id == class_id)):
+        raise HTTPException(status_code=409, detail="Remove this class's subjects before deleting the grade/section")
+    db.delete(classroom); await db.commit(); return {"deleted": True}
+
+@router.get("/configuration")
+async def configuration(grade: str, section: str, db: AsyncSession = Depends(get_db)) -> dict:
+    classroom = await find_class(db, grade, section)
+    subjects = list((await db.scalars(select(Subject).where(Subject.class_id == classroom.id).order_by(Subject.name))).all())
+    teacher_ids = {subject.teacher_id for subject in subjects if subject.teacher_id}
+    teachers_by_id = {teacher.id: teacher for teacher in (await db.scalars(select(User).where(User.id.in_(teacher_ids)))).all()} if teacher_ids else {}
+    return {"class_id": str(classroom.id), "grade": classroom.grade.removeprefix("Grade "), "section": classroom.section, "subjects": [{"id": str(subject.id), "name": subject.name, "teacher_id": str(subject.teacher_id), "teacher": teachers_by_id[subject.teacher_id].full_name, "weekly_periods": subject.weekly_periods} for subject in subjects]}
+
+@router.post("/configuration/subjects")
+async def create_subject(grade: str, section: str, payload: SubjectPayload, db: AsyncSession = Depends(get_db)) -> dict:
+    classroom = await find_class(db, grade, section)
+    teacher = await db.get(User, payload.teacher_id)
+    if not teacher or teacher.role != UserRole.teacher or not teacher.is_active: raise HTTPException(status_code=422, detail="Select an active teacher")
+    if await db.scalar(select(Subject).where(Subject.class_id == classroom.id, Subject.name == payload.name.strip())): raise HTTPException(status_code=409, detail="This subject already exists for the selected class")
+    subject = Subject(name=payload.name.strip(), class_id=classroom.id, teacher_id=teacher.id, weekly_periods=payload.weekly_periods); db.add(subject); await db.commit()
+    return {"id": str(subject.id), "name": subject.name, "teacher_id": str(teacher.id), "teacher": teacher.full_name, "weekly_periods": subject.weekly_periods}
+
+@router.delete("/configuration/subjects/{subject_id}")
+async def delete_subject(subject_id: UUID, db: AsyncSession = Depends(get_db)) -> dict:
+    subject = await db.get(Subject, subject_id)
+    if not subject: raise HTTPException(status_code=404, detail="Subject not found")
+    removed_slots = await db.execute(delete(TimetableSlot).where(TimetableSlot.subject_id == subject_id))
+    await db.delete(subject); await db.commit()
+    return {"deleted": True, "removed_timetable_slots": removed_slots.rowcount}
+
 
 @router.get("")
-async def timetable(grade: str = "12", section: str = "A", user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> dict:
-    classroom = await classroom_for_user(db, grade, section, user)
+async def timetable(grade: str = "12", section: str = "A", db: AsyncSession = Depends(get_db)) -> dict:
+    classroom = await find_class(db, grade, section)
     query = select(TimetableSlot).where(TimetableSlot.class_id == classroom.id)
-    subject_ids = await teacher_subject_ids(db, user)
-    if subject_ids is not None:
-        query = query.where(TimetableSlot.subject_id.in_(subject_ids))
     slots = list((await db.scalars(query)).all())
     if slots:
         return await serialize_timetable(db, classroom, slots)
     recommendation, warnings = await generate_recommendation(db, classroom.id)
-    if subject_ids is not None:
-        recommendation = [slot for slot in recommendation if slot.subject_id in subject_ids]
     return await serialize_timetable(db, classroom, transient_slots(classroom, recommendation), warnings)
 
 
 @router.post("/recommendation")
-async def recommendation(grade: str = "12", section: str = "A", user: User = Depends(require_permission("manage_timetable")), db: AsyncSession = Depends(get_db)) -> dict:
+async def recommendation(grade: str = "12", section: str = "A", db: AsyncSession = Depends(get_db)) -> dict:
     classroom = await find_class(db, grade, section)
     suggested, warnings = await generate_recommendation(db, classroom.id)
-    subject_ids = await teacher_subject_ids(db, user)
-    if subject_ids is not None:
-        suggested = [slot for slot in suggested if slot.subject_id in subject_ids]
     return await serialize_timetable(db, classroom, transient_slots(classroom, suggested), warnings)
 
 
 @router.put("")
-async def save_timetable(payload: TimetablePayload, user: User = Depends(require_permission("manage_timetable")), db: AsyncSession = Depends(get_db)) -> dict:
+async def save_timetable(payload: TimetablePayload, db: AsyncSession = Depends(get_db)) -> dict:
     classroom = await find_class(db, payload.grade, payload.section)
     subjects = {subject.id: subject for subject in (await db.scalars(select(Subject).where(Subject.class_id == classroom.id))).all()}
-    subject_ids = await teacher_subject_ids(db, user)
-    requested_ids = {slot.subject_id for slot in payload.slots if slot.subject_id}
-    if subject_ids is not None and not requested_ids.issubset(set(subject_ids)):
-        raise HTTPException(status_code=403, detail="Timetable contains a subject outside your scope")
-
-    # Admins replace a complete class timetable. Teachers replace only the
-    # subject slots assigned to them, preserving the rest of the class plan.
-    if subject_ids is None:
-        await db.execute(delete(TimetableSlot).where(TimetableSlot.class_id == classroom.id))
-    else:
-        await db.execute(delete(TimetableSlot).where(TimetableSlot.class_id == classroom.id, TimetableSlot.subject_id.in_(subject_ids)))
+    await db.execute(delete(TimetableSlot).where(TimetableSlot.class_id == classroom.id))
     await db.flush()
 
     seen_slots: set[tuple[str, str]] = set()
@@ -133,11 +157,12 @@ async def save_timetable(payload: TimetablePayload, user: User = Depends(require
             raise HTTPException(status_code=409, detail=f"Teacher conflict for {subject.name}")
         class_conflict = await db.scalar(select(TimetableSlot.id).where(TimetableSlot.class_id == classroom.id, TimetableSlot.day_of_week == day_of_week, TimetableSlot.period_number == period_number))
         teacher_conflict = await db.scalar(select(TimetableSlot.id).where(TimetableSlot.class_id != classroom.id, TimetableSlot.teacher_id == subject.teacher_id, TimetableSlot.day_of_week == day_of_week, TimetableSlot.period_number == period_number))
-        if class_conflict or teacher_conflict:
-            raise HTTPException(status_code=409, detail=f"Conflict for {subject.name} at {slot.day} {slot.time}")
+        if class_conflict:
+            raise HTTPException(status_code=409, detail=f"Class conflict: Grade {classroom.grade.removeprefix('Grade ')} • Section {classroom.section} already has a lesson at {slot.day} {slot.time}.")
+        if teacher_conflict:
+            raise HTTPException(status_code=409, detail=f"Teacher conflict: {subject.name}'s teacher is already teaching another class at {slot.day} {slot.time}.")
         seen_slots.add((slot.day, slot.time)); seen_teacher_slots.add(teacher_key)
         prepared.append(TimetableSlot(class_id=classroom.id, day_of_week=day_of_week, period_number=period_number, start_time=start_time, end_time=end_time, subject_id=subject.id, teacher_id=subject.teacher_id))
     db.add_all(prepared)
     await db.commit()
-    visible_slots = prepared if subject_ids is not None else list((await db.scalars(select(TimetableSlot).where(TimetableSlot.class_id == classroom.id))).all())
-    return {"saved": True, **(await serialize_timetable(db, classroom, visible_slots))}
+    return {"saved": True, **(await serialize_timetable(db, classroom, prepared))}

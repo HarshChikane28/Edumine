@@ -13,6 +13,15 @@ export const weekdays: Weekday[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 export const periods = ['09:00', '10:00', '11:30', '01:00'];
 function buildSlots(): TimetableSlot[] { return periods.flatMap(time => weekdays.map(day => ({ id: `${day}-${time}` as SlotId, day, time, subject: null, subject_id: null, teacher: null }))); }
 const initialState: TimetableState = { grade: '12', section: 'A', slots: buildSlots(), subjects: [], classes: [], warnings: [], dirty: false, saving: false, loading: true, error: null, lastSavedAt: null };
+const demoSubjects: TimetableSubject[] = [
+  { id: 'demo-mathematics', name: 'Mathematics', teacher: 'Ms. Priya Shah', weekly_periods: 4 },
+  { id: 'demo-physics', name: 'Physics', teacher: 'Mr. Arjun Mehta', weekly_periods: 4 },
+  { id: 'demo-chemistry', name: 'Chemistry', teacher: 'Dr. Neha Iyer', weekly_periods: 4 },
+  { id: 'demo-english', name: 'English', teacher: 'Mrs. Kavita Rao', weekly_periods: 3 },
+  { id: 'demo-computer-lab', name: 'Computer Lab', teacher: 'Mr. Rohan Das', weekly_periods: 3 },
+  { id: 'demo-physical-education', name: 'Physical Education', teacher: 'Coach Aman Verma', weekly_periods: 2 },
+];
+function demoTimetable(grade: string, section: string): TimetableResponse { const sequence = [0, 1, 2, 3, 1, 2, 4, 0, 2, 3, 0, 5, 3, 4, 1, 2, 4, 0, 1, 5]; return { grade, section, subjects: demoSubjects, warnings: [], slots: buildSlots().map((slot, index) => { const subject = demoSubjects[sequence[index]]; return { ...slot, subject: subject.name, subject_id: subject.id, teacher: subject.teacher }; }) }; }
 function reducer(state: TimetableState, action: Action): TimetableState {
   if (action.type === 'setClass') return { ...state, grade: action.grade, section: action.section, slots: buildSlots(), subjects: [], warnings: [], dirty: false, loading: true, error: null };
   if (action.type === 'setClasses') return { ...state, classes: action.classes };
@@ -34,10 +43,10 @@ export function TimetableProvider({ children }: { children: ReactNode }) {
       const payload = await request<TimetableResponse>(path, recommendation ? { method: 'POST' } : undefined);
       dispatch({ type: 'hydrate', payload });
       if (recommendation) dispatch({ type: 'recommended' });
-    } catch { dispatch({ type: 'failed', message: 'Could not load the timetable. Start the local API and run the seed script.' }); }
+    } catch (error) { dispatch({ type: 'hydrate', payload: demoTimetable(grade, section) }); dispatch({ type: 'failed', message: 'Not authenticated — showing demo timetable data. Sign in with a real account to load and save the database timetable.' }); }
   }, []);
   useEffect(() => { void load(state.grade, state.section); }, [load, state.grade, state.section]);
-  useEffect(() => { void request<ClassOption[]>('/timetable/classes').then(classes => dispatch({ type: 'setClasses', classes })).catch(() => undefined); }, []);
+  useEffect(() => { void request<ClassOption[]>('/timetable/classes').then(classes => dispatch({ type: 'setClasses', classes })).catch(() => dispatch({ type: 'setClasses', classes: [{ grade: '12', section: 'A' }, { grade: '11', section: 'A' }, { grade: '10', section: 'B' }] })); }, []);
   const value = useMemo(() => ({
     state,
     assign: (slotId: SlotId, subjectId: string) => { const subject = state.subjects.find(item => item.id === subjectId); if (subject) dispatch({ type: 'assign', slotId, subject }); },
@@ -49,7 +58,7 @@ export function TimetableProvider({ children }: { children: ReactNode }) {
       try {
         const payload = await request<TimetableResponse & { saved: boolean }>('/timetable', { method: 'PUT', body: JSON.stringify({ grade: state.grade, section: state.section, slots: state.slots.map(({ day, time, subject_id }) => ({ day, time, subject_id })) }) });
         dispatch({ type: 'saved', payload });
-      } catch { dispatch({ type: 'failed', message: 'The timetable was not saved. Resolve any teacher conflict and try again.' }); }
+      } catch (error) { dispatch({ type: 'failed', message: error instanceof Error ? error.message : 'The timetable was not saved. Resolve any teacher conflict and try again.' }); }
     },
   }), [load, state]);
   return <TimetableContext.Provider value={value}>{children}</TimetableContext.Provider>;
