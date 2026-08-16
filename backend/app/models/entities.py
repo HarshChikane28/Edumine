@@ -62,6 +62,7 @@ class Subject(Base):
     name: Mapped[str] = mapped_column(String(120))
     class_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("classes.id"))
     teacher_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    weekly_periods: Mapped[int] = mapped_column(Integer, default=0)
 
 class TeacherProfile(Base):
     __tablename__ = "teacher_profiles"
@@ -100,7 +101,10 @@ class Result(Base):
 
 class TimetableSlot(Base):
     __tablename__ = "timetable_slots"
-    __table_args__ = (UniqueConstraint("class_id", "day_of_week", "period_number"),)
+    __table_args__ = (
+        UniqueConstraint("class_id", "day_of_week", "period_number"),
+        UniqueConstraint("teacher_id", "day_of_week", "period_number"),
+    )
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     class_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("classes.id", ondelete="CASCADE")); day_of_week: Mapped[int] = mapped_column(SmallInteger); period_number: Mapped[int] = mapped_column(SmallInteger)
     start_time: Mapped[time] = mapped_column(Time); end_time: Mapped[time] = mapped_column(Time); subject_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("subjects.id")); teacher_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
