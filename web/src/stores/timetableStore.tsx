@@ -12,6 +12,7 @@ type Action = { type: 'setClass'; grade: string; section: string } | { type: 'hy
 export const weekdays: Weekday[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 export const periods = ['09:00', '10:00', '11:30', '01:00'];
 function buildSlots(): TimetableSlot[] { return periods.flatMap(time => weekdays.map(day => ({ id: `${day}-${time}` as SlotId, day, time, subject: null, subject_id: null, teacher: null }))); }
+function completeSlots(slots: TimetableSlot[]): TimetableSlot[] { const byId = new Map(slots.map(slot => [slot.id, slot])); return buildSlots().map(slot => byId.get(slot.id) || slot); }
 const initialState: TimetableState = { grade: '12', section: 'A', slots: buildSlots(), subjects: [], classes: [], warnings: [], dirty: false, saving: false, loading: true, error: null, lastSavedAt: null };
 const demoSubjects: TimetableSubject[] = [
   { id: 'demo-mathematics', name: 'Mathematics', teacher: 'Ms. Priya Shah', weekly_periods: 4 },
@@ -25,12 +26,12 @@ function demoTimetable(grade: string, section: string): TimetableResponse { cons
 function reducer(state: TimetableState, action: Action): TimetableState {
   if (action.type === 'setClass') return { ...state, grade: action.grade, section: action.section, slots: buildSlots(), subjects: [], warnings: [], dirty: false, loading: true, error: null };
   if (action.type === 'setClasses') return { ...state, classes: action.classes };
-  if (action.type === 'hydrate') return { ...state, ...action.payload, slots: action.payload.slots.length ? action.payload.slots : buildSlots(), dirty: false, saving: false, loading: false, error: null };
+  if (action.type === 'hydrate') return { ...state, ...action.payload, slots: completeSlots(action.payload.slots), dirty: false, saving: false, loading: false, error: null };
   if (action.type === 'recommended') return { ...state, dirty: true };
   if (action.type === 'assign') return { ...state, dirty: true, slots: state.slots.map(slot => slot.id === action.slotId ? { ...slot, subject: action.subject.name, subject_id: action.subject.id, teacher: action.subject.teacher } : slot) };
   if (action.type === 'clear') return { ...state, dirty: true, slots: state.slots.map(slot => slot.id === action.slotId ? { ...slot, subject: null, subject_id: null, teacher: null } : slot) };
   if (action.type === 'saving') return { ...state, saving: true, error: null };
-  if (action.type === 'saved') return { ...state, ...action.payload, slots: action.payload.slots.length ? action.payload.slots : buildSlots(), saving: false, dirty: false, lastSavedAt: new Date().toISOString(), error: null };
+  if (action.type === 'saved') return { ...state, ...action.payload, slots: completeSlots(action.payload.slots), saving: false, dirty: false, lastSavedAt: new Date().toISOString(), error: null };
   return { ...state, saving: false, loading: false, error: action.message };
 }
 const TimetableContext = createContext<{ state: TimetableState; assign: (slotId: SlotId, subjectId: string) => void; clear: (slotId: SlotId) => void; setClass: (grade: string, section: string) => void; save: () => Promise<void>; generate: () => Promise<void> } | null>(null);
