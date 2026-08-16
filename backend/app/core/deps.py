@@ -2,11 +2,11 @@ from collections.abc import Callable
 from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import decode_access_token
 from app.db.session import get_db
-from app.models import Permission, TeacherPermission, User
+from app.models import ClassRoom, Permission, StudentProfile, Subject, TeacherPermission, User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
@@ -31,3 +31,25 @@ def require_permission(key: str) -> Callable:
         if not (await db.scalar(query)): raise HTTPException(status_code=403, detail=f"Missing permission: {key}")
         return user
     return dependency
+
+async def assert_student_access(student_id: UUID, user: User, db: AsyncSession) -> None:
+    if user.role != UserRole.student or user.id != student_id:
+        if user.role == UserRole.admin: return
+        if user.role == UserRole.teacher:
+            profile = await db.get(StudentProfile, student_id)
+            class_ids = await teacher_class_ids(db, user)
+            if profile and class_ids and profile.class_id in class_ids: return
+        if user.role not in (UserRole.admin, UserRole.teacher):
+            raise HTTPException(status_code=403, detail="Students can only access their own records")
+        raise HTTPException(status_code=403, detail="Teacher is outside this student's class scope")
+
+async def teacher_subject_ids(db: AsyncSession, user: User) -> list[UUID] | None:
+    if user.role == UserRole.admin: return None
+    if user.role != UserRole.teacher: return []
+    return list((await db.scalars(select(Subject.id).where(Subject.teacher_id == user.id))).all())
+
+async def teacher_class_ids(db: AsyncSession, user: User) -> list[UUID] | None:
+    if user.role == UserRole.admin: return None
+    subject_ids = await teacher_subject_ids(db, user)
+    if not subject_ids: return []
+    return list((await db.scalars(select(Subject.class_id).where(Subject.id.in_(subject_ids)).distinct())).all())
