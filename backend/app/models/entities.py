@@ -3,7 +3,7 @@ import uuid
 from datetime import date, datetime, time
 from decimal import Decimal
 from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, Numeric, SmallInteger, String, Text, Time, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 class Base(DeclarativeBase): pass
@@ -138,3 +138,14 @@ class ActivityEnrollment(Base):
 class ActivityFeed(Base):
     __tablename__ = "activity_feed"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4); activity_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("activities.id", ondelete="CASCADE")); text: Mapped[str] = mapped_column(String(500)); created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[DocumentStatus] = mapped_column(Enum(DocumentStatus, name="document_status"), default=DocumentStatus.completed)
+    extracted_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    upload_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    category: Mapped[str] = mapped_column(String(100), nullable=False)

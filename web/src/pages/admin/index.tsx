@@ -1,15 +1,791 @@
-import { useEffect, useState, type DragEvent } from 'react';
+import { useState, useRef, useEffect, type DragEvent, type ChangeEvent } from 'react';
 import { AdminLayout } from '../../components/layouts';
 import { Card, DataTable, Icon, PageHeader } from '../../components/common/ui';
 import { periods, useTimetable, weekdays, type SlotId } from '../../stores/timetableStore';
 import { request } from '../../services/api/client';
 
+interface DocumentItem {
+  id?: string;
+  filename: string;
+  upload_date: string;
+  status: string;
+  extracted_data: any;
+}
 const Summary = ({ items }: { items: string[][] }) => <div className="stats">{items.map(([value, label, icon]) => <Card key={label}><Icon>{icon}</Icon><strong>{value}</strong><span>{label}</span></Card>)}</div>;
 
 export function Exams() { return <AdminLayout><PageHeader title="Exam and Results Management" subtitle="Schedule examinations and monitor grading progress." /><Summary items={[['04', 'Upcoming exams', 'event'], ['82%', 'Average score', 'analytics'], ['68%', 'Grading progress', 'task_alt']]} /><Card><h2>Upcoming Examinations</h2><DataTable headers={['Subject', 'Date', 'Hall', 'Proctor', 'Status']} rows={[['Mathematics', 'Oct 24, 2024', 'Hall A', 'Mr. Davis', 'Scheduled'], ['Physics', 'Oct 26, 2024', 'Hall B', 'Mrs. Chen', 'Scheduled'], ['Chemistry', 'Oct 29, 2024', 'Lab 2', 'Ms. Lee', 'Draft']]} /></Card></AdminLayout>; }
 
-export function Documents() { return <AdminLayout><PageHeader title="Administrative Paperwork Manager" subtitle="Manage document requests from one place." /><Card className="dropzone"><Icon>cloud_upload</Icon><h2>Upload a document</h2><p>Drag and drop files here, or browse from your device</p><button className="primary-btn">Choose file</button></Card><Card><h2>Digitized Documents Requests</h2><DataTable headers={['Document', 'Category', 'Requested by', 'Date', 'Status']} rows={[['Transfer Certificate', 'Student records', 'Anita Roy', 'Oct 22, 2024', 'Pending'], ['Fee Receipt Q3', 'Finance', 'Ravi Kumar', 'Oct 21, 2024', 'Processing'], ['Bonafide Certificate', 'Student records', 'Nisha Shah', 'Oct 19, 2024', 'Completed']]} /></Card></AdminLayout>; }
 
+export function Documents() {
+  const API_URL = "http://localhost:8000/api/v1";
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [showCategoryModal, setShowCategoryModal] =
+    useState(false);
+
+  const [tableRows, setTableRows] = useState<any[][]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] =
+    useState(true);
+
+  const fileInputRef =
+    useRef<HTMLInputElement>(null);
+
+  const categories = [
+    "Student Records",
+    "Academic",
+    "Finance",
+    "Attendance",
+    "Administrative",
+    "Examination",
+    "HR",
+    "Other",
+  ];
+
+  // =========================================================
+  // FETCH DOCUMENTS
+  // =========================================================
+
+  const fetchDocuments = async () => {
+    try {
+      setIsLoadingDocuments(true);
+
+      const response = await fetch(
+        `${API_URL}/documents`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      console.log(
+        "DOCUMENTS FROM API:",
+        data
+      );
+
+      /*
+       * New backend returns:
+       *
+       * [
+       *   {
+       *     id,
+       *     filename,
+       *     path,
+       *     category,
+       *     status,
+       *     upload_date,
+       *     extracted_data
+       *   }
+       * ]
+       */
+
+      const documents = Array.isArray(data)
+        ? data
+        : Array.isArray(data.items)
+        ? data.items
+        : [];
+
+      console.log(
+        "DOCUMENT COUNT FROM API:",
+        documents.length
+      );
+
+      const rows = documents.map(
+        (doc: any) => {
+          /*
+           * This URL points to the NEW backend
+           * endpoint which generates a clean
+           * digitized PDF.
+           */
+          const digitizedDownloadUrl =
+            `${API_URL}/documents/${doc.id}/download`;
+
+          /*
+           * Document name
+           *
+           * Clicking this downloads the digitized
+           * PDF, NOT the original uploaded file.
+           */
+          const documentCell = (
+            <a
+              key={doc.id}
+              href={digitizedDownloadUrl}
+              download
+              title="Download digitized document"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                color: "#6750A4",
+                fontWeight: 600,
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              <Icon>download</Icon>
+
+              <span>
+                {doc.filename ||
+                  "Untitled Document"}
+              </span>
+            </a>
+          );
+
+          /*
+           * Status formatting
+           */
+          let status = "Completed";
+
+          if (doc.status) {
+            status =
+              doc.status
+                .charAt(0)
+                .toUpperCase() +
+              doc.status.slice(1);
+          }
+
+          /*
+           * Date formatting
+           */
+          let uploadDate = "Today";
+
+          if (doc.upload_date) {
+            uploadDate =
+              new Date(
+                doc.upload_date
+              ).toLocaleDateString(
+                "en-US",
+                {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }
+              );
+          }
+
+          return [
+            documentCell,
+
+            /*
+             * Category is now a database field:
+             *
+             * doc.category
+             *
+             * NOT:
+             *
+             * doc.extracted_data.category
+             */
+            doc.category || "Other",
+
+            /*
+             * requested_by is not currently part
+             * of your Document model.
+             */
+            doc.extracted_data
+              ?.requested_by ||
+              "System User",
+
+            uploadDate,
+
+            status,
+          ];
+        }
+      );
+
+      setTableRows(rows);
+    } catch (error) {
+      console.error(
+        "Failed to fetch documents:",
+        error
+      );
+
+      setTableRows([]);
+
+      setUploadMessage(
+        "Unable to load documents."
+      );
+    } finally {
+      setIsLoadingDocuments(false);
+    }
+  };
+
+  // =========================================================
+  // INITIAL LOAD
+  // =========================================================
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  // =========================================================
+  // FILE SELECTED
+  // =========================================================
+
+  /*
+   * IMPORTANT:
+   *
+   * Selecting a file does NOT upload it immediately.
+   *
+   * We first ask the user for the category.
+   */
+  const selectFileForUpload = (
+    file: File
+  ) => {
+    console.log(
+      "FILE SELECTED:",
+      file.name
+    );
+
+    setPendingFile(file);
+    setSelectedCategory("");
+    setUploadMessage("");
+    setShowCategoryModal(true);
+  };
+
+  // =========================================================
+  // FILE PICKER
+  // =========================================================
+
+  const onFileChange = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    selectFileForUpload(file);
+
+    /*
+     * Reset input so the same file can be
+     * selected again later.
+     */
+    e.target.value = "";
+  };
+
+  // =========================================================
+  // DRAG & DROP
+  // =========================================================
+
+  const onDrop = (
+    e: DragEvent<HTMLDivElement>
+  ) => {
+    e.preventDefault();
+
+    const file =
+      e.dataTransfer.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    selectFileForUpload(file);
+  };
+
+  const onDragOver = (
+    e: DragEvent<HTMLDivElement>
+  ) => {
+    e.preventDefault();
+  };
+
+  // =========================================================
+  // ACTUAL UPLOAD
+  // =========================================================
+
+  const handleFileUpload = async (
+    file: File,
+    category: string
+  ) => {
+    setIsUploading(true);
+
+    setUploadMessage(
+      "Uploading file and running OCR..."
+    );
+
+    const formData = new FormData();
+
+    /*
+     * Backend expects:
+     *
+     * file
+     * category
+     */
+    formData.append(
+      "file",
+      file
+    );
+
+    formData.append(
+      "category",
+      category
+    );
+
+    try {
+      console.log(
+        "UPLOADING:",
+        {
+          filename: file.name,
+          category,
+        }
+      );
+
+      const response = await fetch(
+        `${API_URL}/documents/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "UPLOAD RESPONSE:",
+        data
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail ||
+            `Upload failed: ${response.status}`
+        );
+      }
+
+      setUploadMessage(
+        `Success! ${
+          data.filename ||
+          file.name
+        } has been digitized and saved.`
+      );
+
+      /*
+       * Close category dialog.
+       */
+      setShowCategoryModal(false);
+
+      setPendingFile(null);
+      setSelectedCategory("");
+
+      /*
+       * Refresh table from PostgreSQL.
+       */
+      await fetchDocuments();
+    } catch (error) {
+      console.error(
+        "Upload failed:",
+        error
+      );
+
+      setUploadMessage(
+        error instanceof Error
+          ? error.message
+          : "Error uploading document."
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // =========================================================
+  // CONFIRM CATEGORY
+  // =========================================================
+
+  const confirmCategory = async () => {
+    if (!pendingFile) {
+      return;
+    }
+
+    if (!selectedCategory) {
+      setUploadMessage(
+        "Please select a document category."
+      );
+
+      return;
+    }
+
+    await handleFileUpload(
+      pendingFile,
+      selectedCategory
+    );
+  };
+
+  // =========================================================
+  // CANCEL CATEGORY
+  // =========================================================
+
+  const cancelCategorySelection = () => {
+    if (isUploading) {
+      return;
+    }
+
+    setPendingFile(null);
+    setSelectedCategory("");
+    setShowCategoryModal(false);
+    setUploadMessage("");
+  };
+
+  // =========================================================
+  // RENDER
+  // =========================================================
+
+  return (
+    <AdminLayout>
+      <PageHeader
+        title="Administrative Paperwork Manager"
+        subtitle="Manage document requests from one place."
+      />
+
+      {/* =====================================================
+          UPLOAD CARD
+          ===================================================== */}
+
+      <Card
+        className="dropzone"
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+      >
+        <Icon>
+          cloud_upload
+        </Icon>
+
+        <h2>
+          Upload a document
+        </h2>
+
+        <p>
+          Drag and drop files here, or browse
+          from your device
+        </p>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{
+            display: "none",
+          }}
+          onChange={onFileChange}
+          accept=".pdf,.jpg,.jpeg,.png"
+        />
+
+        <button
+          className="primary-btn"
+          onClick={() =>
+            fileInputRef.current?.click()
+          }
+          disabled={isUploading}
+        >
+          {isUploading
+            ? "Processing..."
+            : "Choose file"}
+        </button>
+
+        {uploadMessage && (
+          <p
+            style={{
+              marginTop: "12px",
+            }}
+          >
+            {uploadMessage}
+          </p>
+        )}
+      </Card>
+
+      {/* =====================================================
+          DOCUMENT TABLE
+          ===================================================== */}
+
+      <Card>
+        <h2>
+          Digitized Documents
+        </h2>
+
+        {isLoadingDocuments ? (
+          <p>
+            Loading documents...
+          </p>
+        ) : (
+          <DataTable
+            headers={[
+              "Digitized Document",
+              "Category",
+              "Requested by",
+              "Date",
+              "Status",
+            ]}
+            rows={tableRows}
+          />
+        )}
+      </Card>
+
+      {/* =====================================================
+          CATEGORY MODAL
+          ===================================================== */}
+
+      {showCategoryModal && (
+        <div
+          onClick={
+            cancelCategorySelection
+          }
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background:
+              "rgba(0, 0, 0, 0.45)",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "#ffffff",
+              borderRadius: "16px",
+              padding: "28px",
+              boxShadow:
+                "0 20px 60px rgba(0, 0, 0, 0.25)",
+            }}
+          >
+            {/* Modal header */}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent:
+                  "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <h2
+                style={{
+                  margin: 0,
+                }}
+              >
+                Select Document Category
+              </h2>
+
+              <button
+                type="button"
+                onClick={
+                  cancelCategorySelection
+                }
+                disabled={isUploading}
+                style={{
+                  border: "none",
+                  background:
+                    "transparent",
+                  cursor: "pointer",
+                  fontSize: "24px",
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <p
+              style={{
+                color: "#666",
+                marginTop: "8px",
+                marginBottom:
+                  "20px",
+              }}
+            >
+              Select a category before
+              the document is processed.
+            </p>
+
+            {/* Selected file */}
+
+            {pendingFile && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "10px",
+                  padding:
+                    "12px 14px",
+                  marginBottom:
+                    "20px",
+                  borderRadius:
+                    "10px",
+                  background:
+                    "#f5f3fa",
+                }}
+              >
+                <Icon>
+                  description
+                </Icon>
+
+                <div
+                  style={{
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize:
+                        "12px",
+                      color:
+                        "#777",
+                      marginBottom:
+                        "3px",
+                    }}
+                  >
+                    Selected file
+                  </div>
+
+                  <div
+                    style={{
+                      fontWeight:
+                        600,
+                      overflow:
+                        "hidden",
+                      textOverflow:
+                        "ellipsis",
+                      whiteSpace:
+                        "nowrap",
+                    }}
+                  >
+                    {
+                      pendingFile.name
+                    }
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Category */}
+
+            <label
+              htmlFor="document-category"
+              style={{
+                display: "block",
+                fontWeight: 600,
+                marginBottom: "8px",
+              }}
+            >
+              Category
+            </label>
+
+            <select
+              id="document-category"
+              value={
+                selectedCategory
+              }
+              onChange={(e) =>
+                setSelectedCategory(
+                  e.target.value
+                )
+              }
+              disabled={isUploading}
+              style={{
+                width: "100%",
+                boxSizing:
+                  "border-box",
+                padding:
+                  "12px 14px",
+                borderRadius:
+                  "8px",
+                border:
+                  "1px solid #ccc",
+                background:
+                  "#fff",
+                fontSize:
+                  "15px",
+                outline:
+                  "none",
+                marginBottom:
+                  "24px",
+              }}
+            >
+              <option value="">
+                Select category
+              </option>
+
+              {categories.map(
+                (category) => (
+                  <option
+                    key={category}
+                    value={category}
+                  >
+                    {category}
+                  </option>
+                )
+              )}
+            </select>
+
+            {/* Actions */}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={
+                  cancelCategorySelection
+                }
+                disabled={isUploading}
+                style={{
+                  padding:
+                    "10px 18px",
+                  borderRadius:
+                    "8px",
+                  border:
+                    "1px solid #ccc",
+                  background:
+                    "#fff",
+                  cursor:
+                    "pointer",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={
+                  confirmCategory
+                }
+                disabled={
+                  !selectedCategory ||
+                  isUploading
+                }
+              >
+                {isUploading
+                  ? "Processing..."
+                  : "Continue & Process"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
+  );
+}
 export function Activities() { const clubs = ['Debate Club', 'Soccer Match: Varsity vs. Oakwood', 'Art Exhibition Setup', 'Premiers Club']; return <AdminLayout><PageHeader title="Student Activities Dashboard" subtitle="Monitor events, clubs, and student engagement." /><div className="activity-grid"><div><h2>Upcoming Events & Clubs</h2><div className="club-grid">{clubs.map((club, i) => <Card key={club}><div className="club-icon"><Icon>celebration</Icon></div><h3>{club}</h3><p>Next: <b>Oct {27 + i}</b></p><p>Supervisor: <b>Mrs. Chen</b></p><p>Enrollment: <b>{45 - i * 5}/50</b></p></Card>)}</div></div><Card><h2>Recent Activity Feed</h2><div className="feed">{['Science Club submitted project report', 'New Chess Club members registered', 'Basketball practice scheduled'].map(activity => <div key={activity}><i className="current" /><p>{activity}<small>Today, 10:30 AM</small></p></div>)}</div></Card></div></AdminLayout>; }
 
 const teacherPermissionCatalog = [{ key: 'manage_students', label: 'Manage Students' }, { key: 'manage_exams', label: 'Manage Exams' }, { key: 'enter_results', label: 'Enter Results' }, { key: 'manage_timetable', label: 'Manage Timetable' }, { key: 'manage_assignments', label: 'Manage Assignments' }, { key: 'manage_documents', label: 'Manage Documents' }, { key: 'manage_activities', label: 'Manage Activities' }];
