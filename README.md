@@ -49,3 +49,19 @@ docker compose up --build
 The API is available at `http://localhost:8000`, with interactive documentation at `http://localhost:8000/docs`.
 
 The backend currently provides the versioned screen endpoints and local document upload boundary. Database models, Alembic migrations, and enforced JWT role permissions are the next backend phase.
+
+## Initialize the database
+
+After the database container is running, run the migration and seed the local admin account:
+
+```powershell
+docker compose exec backend alembic upgrade head
+docker compose exec backend python -m scripts.seed
+```
+
+Demo admin login:
+
+```text
+Email: admin@edusync.local
+Password: Admin@123
+```
