@@ -63,7 +63,7 @@ def transient_slots(classroom: ClassRoom, recommendations: list) -> list[Timetab
 @router.get("/classes")
 async def classes(db: AsyncSession = Depends(get_db)) -> list[dict]:
     rows = list((await db.scalars(select(ClassRoom).order_by(ClassRoom.grade.desc(), ClassRoom.section))).all())
-    return [{"grade": classroom.grade.removeprefix("Grade "), "section": classroom.section} for classroom in rows]
+    return [{"id": str(classroom.id), "grade": classroom.grade.removeprefix("Grade "), "section": classroom.section} for classroom in rows]
 
 @router.get("/teachers")
 async def teachers(db: AsyncSession = Depends(get_db)) -> list[dict]:

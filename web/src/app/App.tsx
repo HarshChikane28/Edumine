@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { Login, StudentDashboard, StudentTimetable, StudentAttendance, AttendanceScan, Assignments, Result } from '../pages/student';
 import StudentProfile from '../pages/student/ProfileSection';
 import StaffProfile from '../pages/staff/ProfileSection';
-import { Exams, Documents, Activities, AdminAttendance, Timetable, TimetableSettings, TeacherManagement } from '../pages/admin';
+import { Exams, Documents, Activities, AdminAttendance, Timetable, TimetableSettings, TeacherManagement, StudentManagement } from '../pages/admin';
 import { TimetableProvider } from '../stores/timetableStore';
 
 export type Role = 'student' | 'teacher' | 'admin';
-export type Route = 'login' | 'dashboard' | 'schedule' | 'attendance' | 'attendance-scan' | 'assignments' | 'profile' | 'result' | 'exams' | 'documents' | 'activities' | 'admin-attendance' | 'timetable' | 'timetable-settings' | 'teacher-management';
-export const routePaths: Record<Route, string> = { login: '/login', dashboard: '/', schedule: '/timetable', attendance: '/attendance', 'attendance-scan': '/attendance/scan', assignments: '/assignments', profile: '/profile', result: '/results/semester', exams: '/admin/exams', documents: '/admin/documents', activities: '/admin/activities', 'admin-attendance': '/admin/attendance', timetable: '/admin/timetable', 'timetable-settings': '/admin/timetable-settings', 'teacher-management': '/admin/teachers' };
-export function getRoute(): Route { const path = window.location.pathname; if (path.includes('/attendance/scan')) return 'attendance-scan'; if (path.includes('/login')) return 'login'; if (path === '/attendance') return 'attendance'; if (path === '/timetable') return 'schedule'; if (path.includes('assignments')) return 'assignments'; if (path.includes('profile')) return 'profile'; if (path.includes('results')) return 'result'; if (path.includes('/admin/exams')) return 'exams'; if (path.includes('documents')) return 'documents'; if (path.includes('/admin/attendance')) return 'admin-attendance'; if (path.includes('activities')) return 'activities'; if (path.includes('/admin/timetable-settings')) return 'timetable-settings'; if (path.includes('timetable')) return 'timetable'; if (path.includes('/admin/teachers')) return 'teacher-management'; return 'dashboard'; }
+export type Route = 'login' | 'dashboard' | 'schedule' | 'attendance' | 'attendance-scan' | 'assignments' | 'profile' | 'result' | 'exams' | 'student-management' | 'documents' | 'activities' | 'admin-attendance' | 'timetable' | 'timetable-settings' | 'teacher-management';
+export const routePaths: Record<Route, string> = { login: '/login', dashboard: '/', schedule: '/timetable', attendance: '/attendance', 'attendance-scan': '/attendance/scan', assignments: '/assignments', profile: '/profile', result: '/results/semester', exams: '/admin/exams', 'student-management': '/admin/students', documents: '/admin/documents', activities: '/admin/activities', 'admin-attendance': '/admin/attendance', timetable: '/admin/timetable', 'timetable-settings': '/admin/timetable-settings', 'teacher-management': '/admin/teachers' };
+export function getRoute(): Route { const path = window.location.pathname; if (path.includes('/attendance/scan')) return 'attendance-scan'; if (path.includes('/login')) return 'login'; if (path === '/attendance') return 'attendance'; if (path === '/timetable') return 'schedule'; if (path.includes('assignments')) return 'assignments'; if (path.includes('profile')) return 'profile'; if (path.includes('results')) return 'result'; if (path.includes('/admin/exams')) return 'exams'; if (path.includes('/admin/students')) return 'student-management'; if (path.includes('documents')) return 'documents'; if (path.includes('/admin/attendance')) return 'admin-attendance'; if (path.includes('activities')) return 'activities'; if (path.includes('/admin/timetable-settings')) return 'timetable-settings'; if (path.includes('timetable')) return 'timetable'; if (path.includes('/admin/teachers')) return 'teacher-management'; return 'dashboard'; }
 export function navigate(route: Route) { window.history.pushState({}, '', routePaths[route]); window.dispatchEvent(new PopStateEvent('popstate')); }
 export function getStoredRole(): Role | null { const role = window.localStorage.getItem('edusync-role'); return role === 'student' || role === 'teacher' || role === 'admin' ? role : null; }
 export function setStoredRole(role: Role) { window.localStorage.setItem('edusync-role', role); }
@@ -32,6 +32,7 @@ export function App() {
     case 'profile': return role === 'student' ? <StudentProfile /> : <StaffProfile />;
     case 'result': return <Result />;
     case 'exams': return <Exams />;
+    case 'student-management': return <StudentManagement />;
     case 'documents': return <Documents />;
     case 'activities': return <Activities />;
     case 'admin-attendance': return <AdminAttendance />;

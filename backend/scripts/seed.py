@@ -23,6 +23,11 @@ DEMO_ATTENDANCE_STUDENTS = [
     ("Isha Patel", "isha.patel@edusync.local", "STU-DEMO-003", "3", "Grade 12", "A", "DEMO-NFC-003"),
     ("Kabir Khan", "kabir.khan@edusync.local", "STU-DEMO-004", "4", "Grade 11", "A", "DEMO-NFC-004"),
     ("Meera Nair", "meera.nair@edusync.local", "STU-DEMO-005", "5", "Grade 10", "B", "DEMO-NFC-005"),
+    ("Vihaan Joshi", "vihaan.joshi@edusync.local", "STU-DEMO-006", "6", "Grade 9", "A", "DEMO-NFC-006"),
+    ("Anaya Deshmukh", "anaya.deshmukh@edusync.local", "STU-DEMO-007", "7", "Grade 8", "B", "DEMO-NFC-007"),
+    ("Reyansh Kulkarni", "reyansh.kulkarni@edusync.local", "STU-DEMO-008", "8", "Grade 12", "A", "DEMO-NFC-008"),
+    ("Saanvi More", "saanvi.more@edusync.local", "STU-DEMO-009", "9", "Grade 11", "A", "DEMO-NFC-009"),
+    ("Advait Patil", "advait.patil@edusync.local", "STU-DEMO-010", "10", "Grade 10", "B", "DEMO-NFC-010"),
 ]
 DEMO_ATTENDANCE_PATTERN = [
     (6, AttendanceStatus.present),
@@ -41,7 +46,7 @@ async def seed() -> None:
             db.add(admin); await db.flush()
         for key, description in PERMISSIONS.items():
             if not await db.scalar(select(Permission).where(Permission.key == key)): db.add(Permission(key=key, description=description))
-        for grade, section in [("Grade 12", "A"), ("Grade 11", "A"), ("Grade 10", "B")]:
+        for grade, section in [("Grade 12", "A"), ("Grade 11", "A"), ("Grade 10", "B"), ("Grade 9", "A"), ("Grade 8", "B")]:
             if not await db.scalar(select(ClassRoom).where(ClassRoom.grade == grade, ClassRoom.section == section)): db.add(ClassRoom(grade=grade, section=section))
         await db.flush()
         teachers: dict[str, User] = {}
@@ -70,20 +75,30 @@ async def seed() -> None:
         if not demo_teacher:
             demo_teacher = User(email="teacher@edusync.local", password_hash=hash_password("Teacher@123"), full_name="Demo Teacher", role=UserRole.teacher, created_by=admin.id)
             db.add(demo_teacher); await db.flush(); db.add(TeacherProfile(user_id=demo_teacher.id))
-            permission_keys = ["manage_assignments", "manage_exams", "manage_documents"]
+            permission_keys = ["manage_students", "manage_assignments", "manage_exams", "manage_documents"]
             permission_rows = list((await db.scalars(select(Permission).where(Permission.key.in_(permission_keys)))).all())
             db.add_all([TeacherPermission(teacher_id=demo_teacher.id, permission_id=permission.id, granted_by=admin.id) for permission in permission_rows])
+        else:
+            permission_keys = ["manage_students", "manage_assignments", "manage_exams", "manage_documents"]
+            permission_rows = list((await db.scalars(select(Permission).where(Permission.key.in_(permission_keys)))).all())
+            for permission in permission_rows:
+                if not await db.scalar(select(TeacherPermission.id).where(TeacherPermission.teacher_id == demo_teacher.id, TeacherPermission.permission_id == permission.id)):
+                    db.add(TeacherPermission(teacher_id=demo_teacher.id, permission_id=permission.id, granted_by=admin.id))
         today = date.today()
         for full_name, email, student_code, roll_no, grade, section, card_uid in DEMO_ATTENDANCE_STUDENTS:
             demo_class = await db.scalar(select(ClassRoom).where(ClassRoom.grade == grade, ClassRoom.section == section))
             demo_student = await db.scalar(select(User).where(User.email == email))
             if not demo_student:
-                demo_student = User(email=email, password_hash=hash_password("Student@123"), full_name=full_name, role=UserRole.student, created_by=admin.id)
+                demo_student = User(email=email, password_hash=hash_password("Student@123"), full_name=full_name, role=UserRole.student, created_by=demo_teacher.id)
                 db.add(demo_student); await db.flush()
+            elif demo_student.created_by != demo_teacher.id:
+                demo_student.created_by = demo_teacher.id
             demo_profile = await db.get(StudentProfile, demo_student.id)
             if not demo_profile:
-                demo_profile = StudentProfile(user_id=demo_student.id, class_id=demo_class.id, roll_no=roll_no, student_code=student_code, created_by=admin.id)
+                demo_profile = StudentProfile(user_id=demo_student.id, class_id=demo_class.id, roll_no=roll_no, student_code=student_code, created_by=demo_teacher.id)
                 db.add(demo_profile); await db.flush()
+            elif demo_profile.created_by != demo_teacher.id:
+                demo_profile.created_by = demo_teacher.id
             if not await db.scalar(select(RFIDCard).where(RFIDCard.uid == card_uid)):
                 db.add(RFIDCard(uid=card_uid, student_id=demo_student.id, label=f"Demo NFC Card - {full_name}"))
             if not await db.scalar(select(AttendanceRecord.id).where(AttendanceRecord.student_id == demo_student.id)):

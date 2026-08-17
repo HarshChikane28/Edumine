@@ -803,6 +803,49 @@ export function AdminAttendance() {
 const teacherPermissionCatalog = [{ key: 'manage_students', label: 'Manage Students' }, { key: 'manage_exams', label: 'Manage Exams' }, { key: 'enter_results', label: 'Enter Results' }, { key: 'manage_timetable', label: 'Manage Timetable' }, { key: 'manage_assignments', label: 'Manage Assignments' }, { key: 'manage_documents', label: 'Manage Documents' }, { key: 'manage_activities', label: 'Manage Activities' }];
 export function TeacherManagement() { const [teachers, setTeachers] = useState<{ name: string; email: string; permissions: string[] }[]>(() => { try { return JSON.parse(localStorage.getItem('edusync-teachers') || '[]'); } catch { return []; } }); const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState('Teacher@123'); const [permissions, setPermissions] = useState<string[]>(['manage_assignments', 'manage_exams']); const toggle = (key: string) => setPermissions(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key]); const create = (event: React.FormEvent) => { event.preventDefault(); const next = [...teachers, { name, email, permissions }]; setTeachers(next); localStorage.setItem('edusync-teachers', JSON.stringify(next)); setName(''); setEmail(''); setPassword('Teacher@123'); }; return <AdminLayout><PageHeader title="Manage Teachers" subtitle="Create teacher credentials and assign explicit permissions." action="" /><div className="teacher-management-grid"><Card><div className="card-title"><h2>Create Teacher Credential</h2><Icon>person_add</Icon></div><form className="teacher-form" onSubmit={create}><label>Full name<input required value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Mrs. Chen" /></label><label>Email<input required type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="teacher@edusync.local" /></label><label>Temporary password<input required minLength={8} value={password} onChange={event => setPassword(event.target.value)} /></label><fieldset><legend>Permissions</legend>{teacherPermissionCatalog.map(permission => <label className="permission-row" key={permission.key}><input type="checkbox" checked={permissions.includes(permission.key)} onChange={() => toggle(permission.key)} /><span><b>{permission.label}</b><small>{permission.key}</small></span></label>)}</fieldset><button className="primary-btn" type="submit"><Icon>person_add</Icon>Create teacher</button></form></Card><Card><div className="card-title"><h2>Teacher Accounts</h2><span className="muted">{teachers.length} created locally</span></div>{teachers.length === 0 ? <div className="empty-state"><Icon>group</Icon><p>No additional teachers created yet.</p></div> : teachers.map(teacher => <div className="teacher-row" key={teacher.email}><div className="avatar">{teacher.name.slice(0, 2).toUpperCase()}</div><div><b>{teacher.name}</b><small>{teacher.email}</small><p>{teacher.permissions.length} permissions granted</p></div></div>)}</Card></div></AdminLayout>; }
 
+type StudentClassOption = { id: string; grade: string; section: string };
+type ManagedStudent = { id: string; full_name: string; email: string; class_id: string; roll_no: string; student_code: string };
+export function StudentManagement() {
+  const [classes, setClasses] = useState<StudentClassOption[]>([]);
+  const [students, setStudents] = useState<ManagedStudent[]>([]);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('Student@123');
+  const [classId, setClassId] = useState('');
+  const [rollNo, setRollNo] = useState('');
+  const [studentCode, setStudentCode] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    const [classRows, studentRows] = await Promise.all([
+      request<StudentClassOption[]>('/timetable/classes'),
+      request<ManagedStudent[]>('/students/teachers/students'),
+    ]);
+    setClasses(classRows);
+    setStudents(studentRows);
+    if (!classId && classRows[0]) setClassId(classRows[0].id);
+  };
+
+  useEffect(() => { void load().catch(error => setMessage(error instanceof Error ? error.message : 'Unable to load student data.')); }, []);
+
+  const create = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage('');
+    try {
+      await request('/students/teachers/students', { method: 'POST', body: JSON.stringify({ full_name: fullName, email, password, class_id: classId, roll_no: rollNo, student_code: studentCode }) });
+      setFullName(''); setEmail(''); setPassword('Student@123'); setRollNo(''); setStudentCode('');
+      setMessage('Student login created successfully.');
+      await load();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to create student login.');
+    } finally { setBusy(false); }
+  };
+
+  return <AdminLayout><PageHeader title="Manage Students" subtitle="Create student login credentials and assign each student to a class." />{message && <p className="setup-message"><Icon>info</Icon>{message}</p>}<div className="teacher-management-grid"><Card><div className="card-title"><h2>Create Student Login</h2><Icon>person_add</Icon></div><form className="teacher-form" onSubmit={create}><label>Full name<input required value={fullName} onChange={event => setFullName(event.target.value)} placeholder="e.g. Riya Sharma" /></label><label>Student email<input required type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="student@edusync.local" /></label><label>Temporary password<input required minLength={8} value={password} onChange={event => setPassword(event.target.value)} /></label><label>Class<select required value={classId} onChange={event => setClassId(event.target.value)}><option value="" disabled>Select class</option>{classes.map(item => <option value={item.id} key={item.id}>Grade {item.grade} • Section {item.section}</option>)}</select></label><label>Roll number<input required value={rollNo} onChange={event => setRollNo(event.target.value)} placeholder="e.g. 11" /></label><label>Student code<input required value={studentCode} onChange={event => setStudentCode(event.target.value)} placeholder="e.g. STU-2025-011" /></label><button className="primary-btn" disabled={busy || !classId} type="submit"><Icon>person_add</Icon>{busy ? 'Creating…' : 'Create student login'}</button></form></Card><Card><div className="card-title"><h2>Students created by you</h2><span className="muted">{students.length} students</span></div>{students.length === 0 ? <div className="empty-state"><Icon>group</Icon><p>No students created yet.</p></div> : students.map(student => <div className="teacher-row" key={student.id}><div className="avatar">{student.full_name.slice(0, 2).toUpperCase()}</div><div><b>{student.full_name}</b><small>{student.email}</small><p>{student.student_code} · Roll {student.roll_no}</p></div></div>)}</Card></div></AdminLayout>;
+}
+
 export function Timetable() {
   const { state, assign, clear, setClass, save, generate } = useTimetable();
   const [isDragging, setIsDragging] = useState(false);
