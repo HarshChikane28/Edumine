@@ -1,1 +1,1 @@
-"""EduSync ERP API application."""
+"""Edumin API application."""

@@ -1,0 +1,10 @@
+.profile-nav-button {
+  padding: 0;
+  border: 0;
+}
+
+.profile-nav-button:hover {
+  background: var(--primary);
+  color: #fff;
+  transform: scale(1.05);
+}

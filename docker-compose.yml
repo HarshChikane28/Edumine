@@ -19,7 +19,9 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://edusync:edusync@db:5432/edusync
       JWT_SECRET: change-me-in-local-env
+      AUTH_DISABLED: "true"
       STORAGE_DIR: ./storage
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     ports:
       - "8000:8000"
     volumes:
