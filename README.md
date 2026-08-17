@@ -72,7 +72,7 @@ Administrators have full access. Teachers receive only explicitly granted permis
 | Database | PostgreSQL 16 with pgvector image | Persistent ERP data and future-ready vector extension |
 | ORM and migrations | SQLAlchemy async, AsyncPG, Alembic | Async persistence, relational models, schema versioning |
 | Authentication | JWT, python-jose, Passlib/bcrypt | Login tokens, role-aware access, teacher permission enforcement |
-| OCR | Gemini vision API, pdf2image, Poppler, Bleach, ReportLab | Document transcription, safe HTML display, digitized PDF export |
+| OCR | Gemini API, pdf2image, Poppler, Bleach, ReportLab | Document transcription, safe HTML display, digitized PDF export |
 | Attendance | RFID/NFC UID mapping | Card-to-student mapping and scan-based attendance records |
 | Local platform | Docker Compose | Reproducible API and PostgreSQL environment |
 
