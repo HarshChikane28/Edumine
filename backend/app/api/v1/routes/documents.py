@@ -1,3 +1,4 @@
+import asyncio
 import html
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from fastapi import (
     HTTPException,
     UploadFile,
 )
+from starlette.concurrency import run_in_threadpool
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -68,7 +70,18 @@ async def upload(
     # OCR needs the actual filesystem path, not the relative DB path.
     full_path = Path(settings.storage_dir) / relative_path
 
-    extracted_data = extract_text_from_file(str(full_path))
+    try:
+        extracted_data = await asyncio.wait_for(
+            run_in_threadpool(extract_text_from_file, str(full_path)),
+            timeout=45,
+        )
+    except asyncio.TimeoutError:
+        extracted_data = {
+            "status": "error",
+            "message": "OCR processing timed out after 45 seconds.",
+            "total_pages": 0,
+            "pages": [],
+        }
 
     # Save document metadata + OCR result.
     new_doc = Document(

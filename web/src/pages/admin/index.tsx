@@ -66,11 +66,6 @@ export function Documents() {
 
       const data = await response.json();
 
-      console.log(
-        "DOCUMENTS FROM API:",
-        data
-      );
-
       /*
        * New backend returns:
        *
@@ -92,11 +87,6 @@ export function Documents() {
         : Array.isArray(data.items)
         ? data.items
         : [];
-
-      console.log(
-        "DOCUMENT COUNT FROM API:",
-        documents.length
-      );
 
       const rows = documents.map(
         (doc: any) => {
@@ -202,11 +192,6 @@ export function Documents() {
 
       setTableRows(rows);
     } catch (error) {
-      console.error(
-        "Failed to fetch documents:",
-        error
-      );
-
       setTableRows([]);
 
       setUploadMessage(
@@ -239,11 +224,6 @@ export function Documents() {
   const selectFileForUpload = (
     file: File
   ) => {
-    console.log(
-      "FILE SELECTED:",
-      file.name
-    );
-
     setPendingFile(file);
     setSelectedCategory("");
     setUploadMessage("");
@@ -330,14 +310,6 @@ export function Documents() {
     );
 
     try {
-      console.log(
-        "UPLOADING:",
-        {
-          filename: file.name,
-          category,
-        }
-      );
-
       const response = await fetch(
         `${API_URL}/documents/upload`,
         {
@@ -349,16 +321,23 @@ export function Documents() {
       const data =
         await response.json();
 
-      console.log(
-        "UPLOAD RESPONSE:",
-        data
-      );
-
       if (!response.ok) {
         throw new Error(
           data.detail ||
             `Upload failed: ${response.status}`
         );
+      }
+
+      if (data.status !== "completed") {
+        setUploadMessage(
+          data.extracted_data?.message ||
+            "OCR processing failed."
+        );
+        setShowCategoryModal(false);
+        setPendingFile(null);
+        setSelectedCategory("");
+        await fetchDocuments();
+        return;
       }
 
       setUploadMessage(
@@ -381,11 +360,6 @@ export function Documents() {
        */
       await fetchDocuments();
     } catch (error) {
-      console.error(
-        "Upload failed:",
-        error
-      );
-
       setUploadMessage(
         error instanceof Error
           ? error.message
