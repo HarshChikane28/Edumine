@@ -52,7 +52,7 @@ The result is a transparent and repeatable starting timetable. Teachers can then
 
 ### OCR and document digitization
 
-The OCR pipeline uses the configured Gemini Flash model; it does not use Google Cloud Vision. It accepts PDFs and image files. PDFs are converted to page images with Poppler/pdf2image; image files are sent directly. Each page is submitted to Gemini Flash with a strict transcription prompt and a JSON response schema. The prompt requests faithful text and visible structure, including headings, lists, and tables, rather than summary or correction.
+The OCR pipeline uses the configured Gemini Flash model. It accepts PDFs and image files. PDFs are converted to page images with Poppler/pdf2image; image files are sent directly. Each page is submitted to Gemini Flash with a strict transcription prompt and a JSON response schema. The prompt requests faithful text and visible structure, including headings, lists, and tables, rather than summary or correction.
 
 OCR output is stored as structured JSON in PostgreSQL, sanitized before it is shown as HTML, and can be exported as a digitized PDF. The upload route runs OCR in a worker thread with a 45-second timeout, records a failed status and error message if processing cannot complete, and keeps the original document metadata for review.
 
