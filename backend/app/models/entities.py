@@ -12,7 +12,7 @@ class ExamStatus(str, enum.Enum): draft = "draft"; scheduled = "scheduled"; comp
 class ScheduleStatus(str, enum.Enum): scheduled = "scheduled"; completed = "completed"; cancelled = "cancelled"
 class SubmissionStatus(str, enum.Enum): pending = "pending"; submitted = "submitted"; graded = "graded"
 class ResultStatus(str, enum.Enum): passed = "passed"; failed = "failed"
-class DocumentStatus(str, enum.Enum): pending = "pending"; processing = "processing"; completed = "completed"
+class DocumentStatus(str, enum.Enum): pending = "pending"; processing = "processing"; completed = "completed"; failed = "failed"
 
 class User(Base):
     __tablename__ = "users"

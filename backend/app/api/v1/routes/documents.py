@@ -107,6 +107,7 @@ async def upload(
 @router.get("/{document_id}/download")
 async def download_digitized_document(
     document_id: str,
+    _: User = Depends(require_permission("manage_documents")),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(

@@ -21,7 +21,8 @@ backend/storage/*
 !.env.example
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 
 # OS

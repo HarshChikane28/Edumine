@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import pytesseract
 from pdf2image import convert_from_path
-import os
-import uuid
 
 def preprocess_image(image: np.ndarray) -> np.ndarray:
     
@@ -40,7 +38,7 @@ def extract_text_from_file(file_path: str) -> dict:
                     "content": text.strip()
                 })
                 
-        else:
+        elif file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
             img = cv2.imread(file_path)
             if img is None:
                 raise ValueError("Could not read image file")
@@ -53,6 +51,8 @@ def extract_text_from_file(file_path: str) -> dict:
                 "page_number": 1,
                 "content": text.strip()
             })
+        else:
+            raise ValueError("Unsupported OCR file type")
             
     except Exception as e:
         return {
