@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.models import ClassRoom, Subject, TimetableSlot, User, UserRole
+from app.services.notifications import create_timetable_notification
 from app.services.timetable import DAYS, PERIODS, PERIOD_BY_TIME, generate_recommendation
 
 
@@ -165,4 +166,6 @@ async def save_timetable(payload: TimetablePayload, db: AsyncSession = Depends(g
         prepared.append(TimetableSlot(class_id=classroom.id, day_of_week=day_of_week, period_number=period_number, start_time=start_time, end_time=end_time, subject_id=subject.id, teacher_id=subject.teacher_id))
     db.add_all(prepared)
     await db.commit()
-    return {"saved": True, **(await serialize_timetable(db, classroom, prepared))}
+    create_timetable_notification(payload.grade, payload.section)
+    saved_slots = list((await db.scalars(select(TimetableSlot).where(TimetableSlot.class_id == classroom.id))).all())
+    return {"saved": True, **(await serialize_timetable(db, classroom, saved_slots))}

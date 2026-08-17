@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react';
 import { request } from '../services/api/client';
+import { addLocalTimetableNotification } from '../services/api/notifications';
 
 export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri';
 export type SlotId = `${Weekday}-${string}`;
@@ -57,7 +58,8 @@ export function TimetableProvider({ children }: { children: ReactNode }) {
     save: async () => {
       dispatch({ type: 'saving' });
       try {
-        const payload = await request<TimetableResponse & { saved: boolean }>('/timetable', { method: 'PUT', body: JSON.stringify({ grade: state.grade, section: state.section, slots: state.slots.map(({ day, time, subject_id }) => ({ day, time, subject_id })) }) });
+        const payload = await request<TimetableResponse & { saved: boolean }>('/timetable', { method: 'PUT', body: JSON.stringify({ grade: state.grade, section: state.section, slots: state.slots.filter(slot => slot.subject_id).map(({ day, time, subject_id }) => ({ day, time, subject_id })) }) });
+        addLocalTimetableNotification(state.grade, state.section);
         dispatch({ type: 'saved', payload });
       } catch (error) { dispatch({ type: 'failed', message: error instanceof Error ? error.message : 'The timetable was not saved. Resolve any teacher conflict and try again.' }); }
     },

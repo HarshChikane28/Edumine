@@ -4,6 +4,8 @@ import { StudentLayout } from '../../components/layouts';
 import type { Role } from '../../app/App';
 import { request } from '../../services/api/client';
 import { applyDemoScan, demoAttendanceRecords, getAttendanceOverview, scanAttendance, type AttendanceOverview } from '../../services/api/attendance';
+import { getTimetable, slotSubject } from '../../services/api/timetable';
+import { periods, weekdays } from '../../stores/timetableStore';
 
 export function Login({ onLogin }: { onLogin: (role: Role, permissions: string[]) => void }) {
   const [role, setRole] = useState<Role>('admin');
@@ -22,7 +24,20 @@ function useAttendancePolling() { const [attendance, setAttendance] = useState<A
 
 export function StudentDashboard() { const attendance = useAttendancePolling(); const events = [['science', 'Science Exhibition', '20 Days Left'], ['celebration', 'Annual Function Day', '5 Days Left'], ['today', 'My Day', '7 Days Left']]; return <StudentLayout><PageHeader title="Hello, Shashi Kant!" subtitle="Here's your academic overview for today." /><section className="student-overview-grid"><Card className="attendance-live-card"><div className="card-title"><h2>Attendance</h2><span className={`status ${attendance?.today_status === 'present' ? 'present' : 'pending'}`}>{attendance?.today_status === 'present' ? 'Recorded today' : 'Waiting scan'}</span></div><strong>{attendance ? `${attendance.attendance_percentage}%` : '...'}</strong><p>{attendance?.latest_scan_at ? `Last NFC scan: ${formatScanTime(attendance.latest_scan_at)}` : 'Scan the NFC ID card to mark attendance.'}</p><div className="attendance-mini-stats"><span><b>{attendance?.present_days ?? 0}</b>Present</span><span><b>{attendance?.late_days ?? 0}</b>Late</span><span><b>{attendance?.recorded_days ?? 0}</b>Records</span></div></Card><Card><h2>My Progress</h2><div className="progress-chart compact-progress">{[65, 78, 58, 86, 72, 92, 80].map((height, i) => <div className="bar-wrap" key={i}><div className="bar" style={{ height: `${height}%` }} /><span>{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}</span></div>)}</div></Card></section><section className="section"><h2>Upcoming Events</h2><div className="event-grid">{events.map(([icon, title, date]) => <Card className="event-card" key={title}><div className="event-icon"><Icon>{icon}</Icon></div><div><b>{title}</b><span>{date}</span></div><Icon>chevron_right</Icon></Card>)}</div></section><Card className="announcement"><div><span className="label">ANNOUNCEMENT</span><h2>Important Update:<br />School Holiday</h2><p>Due to national holiday, the campus will remain closed this Friday.</p><button className="light-btn">Read more <Icon>arrow_forward</Icon></button></div><Icon>campaign</Icon></Card></StudentLayout>; }
 
-export function StudentTimetable() { const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']; const periods: Array<[string, string[]]> = [['09:00', ['Mathematics', 'English', 'Physics', 'Chemistry', 'Mathematics']], ['10:00', ['Physics', 'Mathematics', 'English', 'Computer Lab', 'Chemistry']], ['11:30', ['Chemistry', 'Physics', 'Mathematics', 'English', 'Computer Lab']], ['01:00', ['Computer Lab', 'Physical Education', 'Chemistry', 'Mathematics', 'English']]]; return <StudentLayout><PageHeader title="My Timetable" subtitle="Grade 12 • Section A · Weekly class schedule" /><Card className="student-timetable"><div className="schedule-grid"><b>Time</b>{days.map(day => <b key={day}>{day}</b>)}{periods.map(([time, subjects]) => <><span className="time" key={time}>{time}</span>{subjects.map((subject, index) => <div className="slot filled" key={`${time}-${days[index]}`}>{subject}</div>)}</>)}</div><p className="timetable-help"><Icon>info</Icon>Your school timetable is shown here. Contact your teacher or administrator if a change is needed.</p></Card></StudentLayout>; }
+export function StudentTimetable() {
+  const [timetable, setTimetable] = useState<Awaited<ReturnType<typeof getTimetable>> | null>(null);
+  useEffect(() => {
+    let active = true;
+    const load = async () => { const next = await getTimetable('12', 'A'); if (active) setTimetable(next); };
+    void load();
+    const timer = window.setInterval(load, 5000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+  const grade = timetable?.grade ?? '12';
+  const section = timetable?.section ?? 'A';
+  const slots = timetable?.slots ?? [];
+  return <StudentLayout><PageHeader title="My Timetable" subtitle={`Grade ${grade} • Section ${section} · Weekly class schedule`} /><Card className="student-timetable"><div className="schedule-grid"><b>Time</b>{weekdays.map(day => <b key={day}>{day}</b>)}{periods.map(time => <><span className="time" key={time}>{time}</span>{weekdays.map(day => { const subject = slotSubject(slots, day, time); return <div className={`slot ${subject !== '—' ? 'filled' : ''}`} key={`${day}-${time}`}>{subject}</div>; })}</>)}</div><p className="timetable-help"><Icon>info</Icon>Your timetable updates automatically when your teacher saves changes.</p></Card></StudentLayout>;
+}
 
 export function Assignments() { const items = [['Compiler Design Lab 4', 'Compiler Design', 'Due tomorrow', 'Pending'], ['Flutter UI Prototype', 'Mobile Application', 'Due Oct 30', 'Submitted'], ['Neural Networks Research Paper', 'Artificial Intelligence', 'Due Nov 05', 'Graded']]; return <StudentLayout><PageHeader title="Assignments" subtitle="Keep track of your coursework and deadlines." action="New Assignment" /><div className="filter-row">{['All', 'Pending', 'Submitted', 'Graded'].map((filter, i) => <button className={`filter ${i === 0 ? 'active' : ''}`} key={filter}>{filter}</button>)}</div>{items.map(([title, subject, due, status]) => <Card className="assignment" key={title}><div className="subject-icon"><Icon>description</Icon></div><div className="assignment-info"><span className="eyebrow">{subject}</span><h2>{title}</h2><p><Icon>calendar_today</Icon>{due}</p></div><Status>{status}</Status><button className="icon-btn"><Icon>more_vert</Icon></button></Card>)}</StudentLayout>; }
 
