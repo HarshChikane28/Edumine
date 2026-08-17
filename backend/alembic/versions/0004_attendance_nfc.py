@@ -1,7 +1,8 @@
 """Add NFC-backed attendance records."""
 from alembic import op
-from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, String, UniqueConstraint, inspect, text
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, String, UniqueConstraint, inspect, text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ENUM
 
 
 revision = "0004_attendance_nfc"
@@ -36,7 +37,7 @@ def upgrade() -> None:
             Column("student_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
             Column("class_id", UUID(as_uuid=True), ForeignKey("classes.id"), nullable=False),
             Column("attendance_date", Date(), nullable=False),
-            Column("status", Enum("present", "absent", "late", name="attendance_status", create_type=False), nullable=False),
+            Column("status", ENUM("present", "absent", "late", name="attendance_status", create_type=False), nullable=False),
             Column("source", String(40), nullable=False, server_default="nfc"),
             Column("scan_uid", String(120), nullable=True),
             Column("scanned_at", DateTime(timezone=True), server_default=text("now()"), nullable=False),

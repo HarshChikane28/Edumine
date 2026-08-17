@@ -142,7 +142,7 @@ async def download_digitized_document(
         topMargin=20 * mm,
         bottomMargin=20 * mm,
         title=f"{document.filename} - Digitized",
-        author="EduSync ERP",
+        author="Edumin",
     )
 
     styles = getSampleStyleSheet()
@@ -158,7 +158,7 @@ async def download_digitized_document(
     # Header
     story.append(
         Paragraph(
-            "EDUSYNC ERP",
+            "EDUMIN",
             title_style,
         )
     )
@@ -266,7 +266,7 @@ async def download_digitized_document(
 
     story.append(
         Paragraph(
-            "Digitized by EduSync ERP",
+            "Digitized by Edumin",
             styles["Normal"],
         )
     )

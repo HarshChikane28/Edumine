@@ -2,7 +2,7 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    app_name: str = "EduSync ERP API"
+    app_name: str = "Edumin API"
     environment: str = "development"
     auth_disabled: bool = False
     database_url: str = "postgresql+asyncpg://edusync:edusync@db:5432/edusync"
