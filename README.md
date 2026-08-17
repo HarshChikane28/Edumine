@@ -52,7 +52,7 @@ The result is a transparent and repeatable starting timetable. Teachers can then
 
 ### OCR and document digitization
 
-The OCR pipeline accepts PDFs and image files. PDFs are converted to page images with Poppler/pdf2image; image files are sent directly. Each page is submitted to the configured Gemini vision model with a strict transcription prompt and a JSON response schema. The prompt requests faithful text and visible structure, including headings, lists, and tables, rather than summary or correction.
+The OCR pipeline uses the configured Gemini Flash model; it does not use Google Cloud Vision. It accepts PDFs and image files. PDFs are converted to page images with Poppler/pdf2image; image files are sent directly. Each page is submitted to Gemini Flash with a strict transcription prompt and a JSON response schema. The prompt requests faithful text and visible structure, including headings, lists, and tables, rather than summary or correction.
 
 OCR output is stored as structured JSON in PostgreSQL, sanitized before it is shown as HTML, and can be exported as a digitized PDF. The upload route runs OCR in a worker thread with a 45-second timeout, records a failed status and error message if processing cannot complete, and keeps the original document metadata for review.
 
@@ -72,7 +72,7 @@ Administrators have full access. Teachers receive only explicitly granted permis
 | Database | PostgreSQL 16 with pgvector image | Persistent ERP data and future-ready vector extension |
 | ORM and migrations | SQLAlchemy async, AsyncPG, Alembic | Async persistence, relational models, schema versioning |
 | Authentication | JWT, python-jose, Passlib/bcrypt | Login tokens, role-aware access, teacher permission enforcement |
-| OCR | Gemini API, pdf2image, Poppler, Bleach, ReportLab | Document transcription, safe HTML display, digitized PDF export |
+| OCR | Gemini Flash API, pdf2image, Poppler, Bleach, ReportLab | Document transcription, safe HTML display, digitized PDF export |
 | Attendance | RFID/NFC UID mapping | Card-to-student mapping and scan-based attendance records |
 | Local platform | Docker Compose | Reproducible API and PostgreSQL environment |
 
@@ -83,6 +83,39 @@ The React application in `web/` calls the versioned FastAPI API under `/api/v1`.
 Role and permission checks are implemented at the API dependency layer. Administrators can manage teachers and permissions; teachers work only with their assigned capabilities; students use self-service endpoints for their own profile and documents. The seed script creates the demo accounts, classes, subjects, timetable data, NFC cards, and attendance history needed to explore the application.
 
 For local feature testing, `docker-compose.yml` currently sets `AUTH_DISABLED=true`, which lets protected API routes use the seeded admin account when no bearer token is supplied. This must be disabled outside local development.
+
+## Manual setup requirements
+
+Complete these requirements before running the project:
+
+| Requirement | Why it is needed | Manual action |
+| --- | --- | --- |
+| Git | Clone, commit, and push the repository | Install Git for Windows and sign in to GitHub. |
+| Node.js 20+ and npm | Run and build the Vite/React frontend | Install the Node.js LTS release, then confirm with `node -v` and `npm -v`. |
+| Docker Desktop | Run FastAPI, PostgreSQL, Poppler, and backend dependencies | Install Docker Desktop, start it, and ensure it is using Linux containers. Confirm with `docker version`. |
+| Gemini API key | Required for Gemini Flash OCR document processing | Create an API key in Google AI Studio. Do not commit the key to Git. |
+| Internet access | Required when Gemini Flash processes uploaded documents | Keep the backend able to reach the Gemini API. |
+| GitHub account | Required only for GitHub Pages publishing and repository collaboration | Push the repository to GitHub and enable GitHub Actions/Pages when deploying. |
+
+### Configure Gemini Flash OCR
+
+The application reads `GEMINI_API_KEY` from your shell environment or a root-level `.env` file. Create the file manually and keep it private:
+
+```text
+GEMINI_API_KEY=your_gemini_flash_api_key
+```
+
+The `.env` file is ignored by Git and must never be committed. On PowerShell, you can instead set the key only for the current terminal session:
+
+```powershell
+$env:GEMINI_API_KEY = "your_gemini_flash_api_key"
+```
+
+Without this key, the rest of the ERP can run, but OCR uploads will return an OCR configuration error.
+
+### Local-development security setting
+
+`docker-compose.yml` currently sets `AUTH_DISABLED=true` for local testing. This lets protected routes fall back to the seeded admin account when no bearer token is provided. Set it to `false` before any shared or production deployment, use a strong `JWT_SECRET`, and configure allowed frontend origins.
 
 ## Run locally
 
