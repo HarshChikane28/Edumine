@@ -13,6 +13,7 @@ class ScheduleStatus(str, enum.Enum): scheduled = "scheduled"; completed = "comp
 class SubmissionStatus(str, enum.Enum): pending = "pending"; submitted = "submitted"; graded = "graded"
 class ResultStatus(str, enum.Enum): passed = "passed"; failed = "failed"
 class DocumentStatus(str, enum.Enum): pending = "pending"; processing = "processing"; completed = "completed"; failed = "failed"
+class AttendanceStatus(str, enum.Enum): present = "present"; absent = "absent"; late = "late"
 
 class User(Base):
     __tablename__ = "users"
@@ -77,6 +78,28 @@ class StudentProfile(Base):
     gpa: Mapped[Decimal | None] = mapped_column(Numeric(3, 2), nullable=True)
     attendance_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+
+class RFIDCard(Base):
+    __tablename__ = "rfid_cards"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    uid: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    student_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    label: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class AttendanceRecord(Base):
+    __tablename__ = "attendance_records"
+    __table_args__ = (UniqueConstraint("student_id", "attendance_date"),)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    student_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    class_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("classes.id"))
+    attendance_date: Mapped[date] = mapped_column(Date)
+    status: Mapped[AttendanceStatus] = mapped_column(Enum(AttendanceStatus, name="attendance_status"), default=AttendanceStatus.present)
+    source: Mapped[str] = mapped_column(String(40), default="nfc")
+    scan_uid: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    scanned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 class Exam(Base):
     __tablename__ = "exams"
