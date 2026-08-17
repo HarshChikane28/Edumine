@@ -1,5 +1,7 @@
+import html
 from pathlib import Path
 
+import bleach
 from fastapi import (
     APIRouter,
     Depends,
@@ -18,7 +20,7 @@ from app.services.ocr import extract_text_from_file
 from app.services.storage import save_file
 from io import BytesIO
 
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -104,7 +106,7 @@ async def upload(
     }
 
 
-@router.get("/{document_id}/download")
+@router.get("/{document_id}/download-pdf")
 async def download_digitized_document(
     document_id: str,
     _: User = Depends(require_permission("manage_documents")),
@@ -298,4 +300,76 @@ async def download_digitized_document(
                 f'attachment; filename="{download_name}"'
             )
         },
+    )
+
+
+@router.get("/{document_id}/download")
+async def download_digitized_document_html(
+    document_id: str,
+    _: User = Depends(require_permission("manage_documents")),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    document = result.scalar_one_or_none()
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    extracted_data = document.extracted_data or {}
+    if extracted_data.get("status") != "success":
+        raise HTTPException(
+            status_code=400,
+            detail="This document does not have successfully extracted OCR data.",
+        )
+
+    pages_html = []
+    pages = extracted_data.get("pages", [])
+    for index, page in enumerate(pages):
+        page_number = page.get("page_number", index + 1)
+        content = bleach.clean(
+            page.get("content", ""),
+            tags=["p", "br", "strong", "em", "h1", "h2", "h3", "ul", "ol", "li", "table", "thead", "tbody", "tr", "th", "td"],
+            attributes={},
+            strip=True,
+        )
+        heading = f"<h2>Page {page_number}</h2>" if len(pages) > 1 else ""
+        pages_html.append(f'<section class="ocr-page">{heading}<div class="ocr-content">{content}</div></section>')
+
+    title = html.escape(document.filename or "Digitized Document")
+    category = html.escape(document.category or "")
+    body = "".join(pages_html) or '<p class="empty">No text was extracted.</p>'
+    content = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title} - Digitized</title>
+  <style>
+    body {{ margin: 0; background: #f5f2f7; color: #211d24; font: 16px/1.6 Arial, sans-serif; }}
+    main {{ max-width: 900px; margin: 32px auto; padding: 40px; background: white; box-shadow: 0 2px 12px #0001; }}
+    h1 {{ margin: 0 0 6px; color: #4f378a; }}
+    .meta {{ color: #625b68; margin-bottom: 32px; }}
+    .ocr-page {{ border-top: 1px solid #ddd6e2; padding-top: 24px; margin-top: 24px; page-break-after: always; }}
+    .ocr-page:last-child {{ page-break-after: auto; }}
+    h2 {{ font-size: 18px; color: #4f378a; }}
+    .ocr-content {{ overflow-wrap: anywhere; font: 15px/1.65 Arial, sans-serif; }}
+    .ocr-content p {{ margin: 0 0 12px; }}
+    .ocr-content h1, .ocr-content h2, .ocr-content h3 {{ color: #332456; margin: 18px 0 10px; }}
+    .ocr-content table {{ width: 100%; border-collapse: collapse; margin: 16px 0; }}
+    .ocr-content th, .ocr-content td {{ border: 1px solid #cfc7d6; padding: 8px 10px; text-align: left; vertical-align: top; }}
+    .ocr-content th {{ background: #eee8f5; font-weight: 700; }}
+    .ocr-content ul, .ocr-content ol {{ margin: 8px 0 14px 24px; }}
+    .empty {{ color: #625b68; }}
+  </style>
+</head>
+<body><main>
+  <h1>Digitized Document</h1>
+  <div class="meta"><strong>Document:</strong> {title}<br><strong>Category:</strong> {category}</div>
+  {body}
+</main></body>
+</html>"""
+
+    base_name = (document.filename or "document").rsplit(".", 1)[0]
+    return HTMLResponse(
+        content=content,
+        headers={"Content-Disposition": f'attachment; filename="{base_name}-digitized.html"'},
     )

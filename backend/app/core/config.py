@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://edusync:edusync@db:5432/edusync"
     jwt_secret: str = "change-me-in-local-env"
     storage_dir: str = "./storage"
+    gemini_api_key: str = ""
     cors_origins: list[str] = ["http://localhost:5173","http://localhost:8000" ]
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
