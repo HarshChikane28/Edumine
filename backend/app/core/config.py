@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "EduSync ERP API"
     environment: str = "development"
+    auth_disabled: bool = False
     database_url: str = "postgresql+asyncpg://edusync:edusync@db:5432/edusync"
     jwt_secret: str = "change-me-in-local-env"
     storage_dir: str = "./storage"

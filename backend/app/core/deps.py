@@ -5,12 +5,20 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import decode_access_token
+from app.core.config import settings
 from app.db.session import get_db
 from app.models import ClassRoom, Permission, StudentProfile, Subject, TeacherPermission, User, UserRole
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> User:
+async def get_current_user(token: str | None = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> User:
+    if settings.auth_disabled and not token:
+        user = await db.scalar(select(User).where(User.email == "admin@edusync.local"))
+        if user and user.is_active:
+            return user
+        raise HTTPException(status_code=503, detail="Auth bypass is enabled but the seeded admin user is unavailable")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     try: payload = decode_access_token(token); user_id = UUID(payload["sub"])
     except (ValueError, KeyError, TypeError): raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     user = await db.get(User, user_id)
